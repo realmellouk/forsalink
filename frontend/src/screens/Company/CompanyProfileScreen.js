@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator ,Image} from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
+import ErrorMessage from '../../components/ErrorMessage'; 
 
 const CompanyProfileScreen = () => {
   const { user, updateUser, logout } = useUser();
@@ -9,6 +10,7 @@ const CompanyProfileScreen = () => {
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState(user.full_name);
   const [companyDescription, setCompanyDescription] = useState(user.company_description || '');
+  const [error, setError] = useState(null);
   const [companyLogo, setCompanyLogo] = useState(user.company_logo || '');
   const handleSave = async () => {
     setSaving(true);
@@ -18,7 +20,7 @@ const CompanyProfileScreen = () => {
       setEditing(false);
       Alert.alert('Success', 'Profile updated!');
     } catch (error) {
-      Alert.alert('Error', 'Update failed');
+        setError('Update failed');
     } finally {
       setSaving(false);
     }
@@ -43,6 +45,31 @@ const CompanyProfileScreen = () => {
       ]);
     }
   };
+  const loadJobs = async () => {
+    try {
+      setError(null);
+      const data = await api.getCompanyJobs(user.id);
+      setJobs(data);
+    } catch (error) {
+    console.error('Load jobs error:', error);
+    setError('Unable to load your jobs. Please check your connection.');
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+    }
+  };
+
+  //retry handler
+  const handlerRetry = () => {
+    setLoading(true);
+    loadJobs();
+  };  
+
+  //befor return statement
+  if (error){
+    return <ErrorMessage message={error} onRetry={handlerRetry} />;
+  }
+
 
   return (
     <ScrollView style={styles.container}>

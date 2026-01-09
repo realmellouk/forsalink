@@ -7,11 +7,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { useUser } from '../utils/UserContext';
 
+
 // Import screens
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-
+import JobFilters from '../screens/student/JobFilters'; 
+import ErrorMessage from '../components/ErrorMessage';  
+import BookmarkScreen from '../screens/student/BookmarkScreen';
 // Student screens
 import StudentHomeScreen from '../screens/student/StudentHomeScreen';
 import JobDetailsScreen from '../screens/student/JobDetailsScreen';
@@ -91,7 +94,17 @@ const StudentTabs = () => {
     </Tab.Navigator>
   );
 };
-
+<Tab.Screen
+name="Bookmarks"
+component={BookmarkScreen}
+options={{
+  headerShown: true,
+  tabBarLabel: 'Saved',
+  tabBarIcon: ()=>(
+    <Text style={{ fontSize: 24 }}>❤️</Text>
+  )
+}}
+/>
 // Company Tab Navigator
 const CompanyTabs = () => {
   return (

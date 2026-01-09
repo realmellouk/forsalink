@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  ScrollView, 
+  ScrollView,
   TouchableOpacity, 
   StyleSheet,
   ActivityIndicator,
@@ -18,6 +18,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  
 
   useEffect(() => {
     loadJobDetails();
