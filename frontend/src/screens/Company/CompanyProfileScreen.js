@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator ,Image} from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
 
@@ -9,12 +9,12 @@ const CompanyProfileScreen = () => {
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState(user.full_name);
   const [companyDescription, setCompanyDescription] = useState(user.company_description || '');
-
+  const [companyLogo, setCompanyLogo] = useState(user.company_logo || '');
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.updateUser(user.id, { full_name: fullName, company_description: companyDescription });
-      await updateUser({ full_name: fullName, company_description: companyDescription });
+      await api.updateUser(user.id, { full_name: fullName, company_description: companyDescription, company_logo: companyLogo });
+      await updateUser({ full_name: fullName, company_description: companyDescription, company_logo: companyLogo });
       setEditing(false);
       Alert.alert('Success', 'Profile updated!');
     } catch (error) {

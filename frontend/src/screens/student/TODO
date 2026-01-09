@@ -1,5 +1,5 @@
 Add loading skeletons instead of blank screens
-Replace emoji empty states with friendly illustrations
+    Replace emoji empty states with friendly illustrations
 Add celebration animations for successful actions
 Implement dark mode theme
 Show user-friendly error messages with retry buttons

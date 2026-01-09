@@ -62,6 +62,7 @@ const AddJobScreen = ({ navigation }) => {
               setLocation('');
               setSalary('');
               setRequirements('');
+              setJobDeadline('');
               // Navigate to dashboard
               navigation.navigate('Dashboard');
             }
@@ -175,16 +176,34 @@ const AddJobScreen = ({ navigation }) => {
             />
           </View>
 
+          {/* Job Deadline */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Job Deadline</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 2026-01-01"
+              value={jobDeadline}
+              onChangeText={setJobDeadline}
+            />
+          </View>
+
           {/* Submit Button */}
           <TouchableOpacity 
             style={styles.submitButton}
-            onPress={handleSubmit}
             disabled={loading}
+            onPress={() => {
+              handleSubmit();
+              Alert.alert(
+                'Success!',
+                'Job posted successfully',
+                [{ text: 'OK', onPress: () => navigation.navigate('Dashboard') }]
+              );
+            }}
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>📢 Post Job</Text>
+              <Text style={styles.submitButtonText}>Post Job</Text>
             )}
           </TouchableOpacity>
         </View>

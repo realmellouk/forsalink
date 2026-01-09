@@ -15,6 +15,7 @@ const EditJobScreen = ({ route, navigation }) => {
   const [requirements, setRequirements] = useState(job.requirements || '');
   const [status, setStatus] = useState(job.status);
   const [loading, setLoading] = useState(false);
+  const [jobDeadline, setJobDeadline] = useState(job.job_deadline || '');
 
   const handleUpdate = async () => {
     if (!title || !description) {
@@ -25,7 +26,7 @@ const EditJobScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       await api.updateJob(job.id, { title, description, job_type: jobType, location, salary, requirements, status });
-      Alert.alert('Success', 'Job updated successfully', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      Alert.alert('Success!', 'Job updated successfully', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (error) {
       Alert.alert('Error', 'Failed to update job');
     } finally {
@@ -81,9 +82,15 @@ const EditJobScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.field}>
+            <Text style={styles.label}>Job Deadline</Text>
+            <TextInput style={styles.jobDeadlineInput} value={jobDeadline} onChangeText={setJobDeadline} />
+          </View>
+          <View style={styles.field}>
             <Text style={styles.label}>Requirements</Text>
             <TextInput style={[styles.input, styles.textArea]} value={requirements} onChangeText={setRequirements} multiline numberOfLines={4} />
           </View>
+
+         
 
           <TouchableOpacity style={styles.updateButton} onPress={handleUpdate} disabled={loading}>
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.updateButtonText}>💾 Save Changes</Text>}
@@ -115,7 +122,9 @@ const styles = StyleSheet.create({
   typeText: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'capitalize' },
   typeTextActive: { color: '#1e40af' },
   updateButton: { backgroundColor: '#10b981', borderRadius: 10, padding: 18, alignItems: 'center', marginTop: 10 },
-  updateButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  updateButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  jobDeadline: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  jobDeadlineInput: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 15, fontSize: 16 },
 });
 
 export default EditJobScreen;
