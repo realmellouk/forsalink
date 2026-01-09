@@ -1,11 +1,10 @@
-// ==================== CompanyProfileScreen.js ====================
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
 
 const CompanyProfileScreen = () => {
-  const { user, updateUser } = useUser();
+  const { user, updateUser, logout } = useUser();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState(user.full_name);
@@ -25,13 +24,37 @@ const CompanyProfileScreen = () => {
     }
   };
 
+  const handleLogout = () => {
+    // For web, use window.confirm
+    if (typeof window !== 'undefined' && window.confirm) {
+      if (window.confirm('Are you sure you want to logout?')) {
+        console.log('Logout confirmed');
+        logout();
+      }
+    } else {
+      // For mobile
+      Alert.alert('Logout', 'Are you sure you want to logout?', [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive', 
+          onPress: () => logout()
+        }
+      ]);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.avatar}><Text style={styles.avatarText}>{user.full_name.charAt(0)}</Text></View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{user.full_name.charAt(0)}</Text>
+        </View>
         <Text style={styles.name}>{user.full_name}</Text>
         <Text style={styles.email}>{user.email}</Text>
-        <View style={styles.badge}><Text style={styles.badgeText}>🏢 Company</Text></View>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>🏢 Company</Text>
+        </View>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -55,18 +78,35 @@ const CompanyProfileScreen = () => {
         <View style={styles.section}>
           <View style={styles.field}>
             <Text style={styles.label}>Company Name</Text>
-            {editing ? <TextInput style={styles.input} value={fullName} onChangeText={setFullName} /> : <Text style={styles.value}>{fullName}</Text>}
+            {editing ? (
+              <TextInput style={styles.input} value={fullName} onChangeText={setFullName} />
+            ) : (
+              <Text style={styles.value}>{fullName}</Text>
+            )}
           </View>
           <View style={styles.field}>
             <Text style={styles.label}>Description</Text>
             {editing ? (
-              <TextInput style={[styles.input, styles.textArea]} value={companyDescription} onChangeText={setCompanyDescription} multiline numberOfLines={5} />
+              <TextInput 
+                style={[styles.input, styles.textArea]} 
+                value={companyDescription} 
+                onChangeText={setCompanyDescription} 
+                multiline 
+                numberOfLines={5} 
+              />
             ) : (
               <Text style={styles.value}>{companyDescription || 'No description'}</Text>
             )}
           </View>
         </View>
       </View>
+
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>🚪 Logout</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 30 }} />
     </ScrollView>
   );
 };
@@ -94,7 +134,21 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '600', color: '#6b7280', marginBottom: 8 },
   value: { fontSize: 16, color: '#1f2937' },
   input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 12, fontSize: 16 },
-  textArea: { height: 100, textAlignVertical: 'top' }
+  textArea: { height: 100, textAlignVertical: 'top' },
+  logoutButton: { 
+    backgroundColor: '#ef4444', 
+    margin: 20, 
+    marginTop: 10,
+    padding: 15, 
+    borderRadius: 10, 
+    alignItems: 'center',
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  logoutText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });
 
 export default CompanyProfileScreen;

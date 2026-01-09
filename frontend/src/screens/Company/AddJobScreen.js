@@ -18,10 +18,11 @@ const AddJobScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [jobType, setJobType] = useState('part-time');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState(''); 
   const [salary, setSalary] = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading, setLoading] = useState(false);
+  const [jobDeadline, setJobDeadline] = useState('');
 
   const handleSubmit = async () => {
     // Validation
@@ -39,7 +40,8 @@ const AddJobScreen = ({ navigation }) => {
         location,
         salary,
         requirements,
-        company_id: user.id
+        company_id: user.id,
+        job_deadline: jobDeadline
       };
 
       const response = await api.createJob(jobData);

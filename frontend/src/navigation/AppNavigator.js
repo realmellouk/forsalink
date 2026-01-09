@@ -151,50 +151,43 @@ const CompanyTabs = () => {
 
 // Main App Navigator
 const AppNavigator = () => {
-  const { user, loading, isFirstLaunch } = useUser();
+  const { user, loading } = useUser();
 
-  // Show simple splash during initial load (before navigation is ready)
   if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#2563eb', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 80, marginBottom: 20 }}>💼</Text>
-        <Text style={{ fontSize: 42, fontWeight: 'bold', color: '#ffffff', marginBottom: 10 }}>ForsaLink</Text>
-        <Text style={{ fontSize: 16, color: '#dbeafe', letterSpacing: 2 }}>Connect • Grow • Succeed</Text>
-      </View>
-    );
+    return <SplashScreen />;
   }
 
-  // Force complete remount when switching between auth states (but not on initial load)
-  const navigationKey = isFirstLaunch ? 'initial' : (user ? `authenticated-${user.role}` : 'unauthenticated');
-
   return (
-    <NavigationContainer key={navigationKey}>
-      <Stack.Navigator 
-        screenOptions={{ headerShown: false }}
-        initialRouteName="Splash"
-      >
-        {/* Always include Splash as first screen */}
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        
-        {/* Auth screens */}
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        
-        {/* Student screens */}
-        <Stack.Screen name="StudentMain" component={StudentTabs} />
-        <Stack.Screen 
-          name="JobDetails" 
-          component={JobDetailsScreen}
-          options={{ headerShown: true, title: 'Job Details' }}
-        />
-        
-        {/* Company screens */}
-        <Stack.Screen name="CompanyMain" component={CompanyTabs} />
-        <Stack.Screen 
-          name="EditJob" 
-          component={EditJobScreen}
-          options={{ headerShown: true, title: 'Edit Job' }}
-        />
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!user ? (
+          // Auth screens - shown when user is null
+          <>
+            <Stack.Screen name="Splash" component={SplashScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        ) : user.role === 'student' ? (
+          // Student screens
+          <>
+            <Stack.Screen name="StudentMain" component={StudentTabs} />
+            <Stack.Screen 
+              name="JobDetails" 
+              component={JobDetailsScreen}
+              options={{ headerShown: true, title: 'Job Details' }}
+            />
+          </>
+        ) : (
+          // Company screens
+          <>
+            <Stack.Screen name="CompanyMain" component={CompanyTabs} />
+            <Stack.Screen 
+              name="EditJob" 
+              component={EditJobScreen}
+              options={{ headerShown: true, title: 'Edit Job' }}
+            />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

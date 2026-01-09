@@ -4,7 +4,7 @@
 // Windows: Run 'ipconfig' in cmd, look for IPv4 Address
 // Mac/Linux: Run 'ifconfig' in terminal, look for inet
 
-export const API_URL = 'http://192.168.11.123:3000/api'; // Change to YOUR IP!
+export const API_URL = 'http://192.168.110.51:3000/api'; // Change to YOUR IP!
 
 // API helper functions
 export const api = {

@@ -1,4 +1,3 @@
-// ==================== SettingsScreen.js ====================
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useUser } from '../utils/UserContext';
@@ -7,10 +6,27 @@ const SettingsScreen = () => {
   const { user, logout } = useUser();
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: logout }
-    ]);
+    // For web, Alert.alert might not work well, so let's use confirm
+    if (typeof window !== 'undefined' && window.confirm) {
+      // Web browser
+      if (window.confirm('Are you sure you want to logout?')) {
+        console.log('Logout confirmed');
+        logout();
+      }
+    } else {
+      // Mobile
+      Alert.alert('Logout', 'Are you sure you want to logout?', [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive', 
+          onPress: async () => {
+            console.log('Logout pressed');
+            await logout();
+          }
+        }
+      ]);
+    }
   };
 
   return (
@@ -23,7 +39,7 @@ const SettingsScreen = () => {
         </View>
         <View style={styles.item}>
           <Text style={styles.itemLabel}>Account Type</Text>
-          <Text style={styles.itemValue}>{user.role === 'student' ? 'Student' : 'Company'}</Text>
+          <Text style={styles.itemValue}>{user.role === 'student' ? '🎓 Student' : '🏢 Company'}</Text>
         </View>
       </View>
 
@@ -40,7 +56,7 @@ const SettingsScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.logoutText}>🚪 Logout</Text>
       </TouchableOpacity>
     </ScrollView>
   );

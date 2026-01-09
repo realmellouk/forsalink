@@ -7,7 +7,6 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isFirstLaunch, setIsFirstLaunch] = useState(true);
 
   // Load user from storage on app start
   useEffect(() => {
@@ -24,10 +23,6 @@ export const UserProvider = ({ children }) => {
       console.error('Load user error:', error);
     } finally {
       setLoading(false);
-      // Allow splash screen to show for at least 2 seconds
-      setTimeout(() => {
-        setIsFirstLaunch(false);
-      }, 2000);
     }
   };
 
@@ -42,10 +37,12 @@ export const UserProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      console.log('🔓 Logging out...');
       await AsyncStorage.removeItem('user');
       setUser(null);
+      console.log('✅ User logged out successfully');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Logout error:', error);
     }
   };
 
@@ -60,7 +57,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout, updateUser, loading, isFirstLaunch }}>
+    <UserContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </UserContext.Provider>
   );
