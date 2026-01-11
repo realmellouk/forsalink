@@ -1,14 +1,15 @@
 // Student Profile Screen
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
+import {
+  View,
+  Text,
   TextInput,
-  TouchableOpacity, 
+  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -17,7 +18,7 @@ const StudentProfileScreen = () => {
   const { user, updateUser } = useUser();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  
+
   const [fullName, setFullName] = useState(user.full_name);
   const [bio, setBio] = useState(user.bio || '');
   const [levelOfStudy, setLevelOfStudy] = useState(user.level_of_study || '');
@@ -36,7 +37,7 @@ const StudentProfileScreen = () => {
       };
 
       const response = await api.updateUser(user.id, userData);
-      
+
       if (response.error) {
         Alert.alert('Error', response.error);
       } else {
@@ -79,7 +80,7 @@ const StudentProfileScreen = () => {
       {/* Edit/Save Buttons */}
       <View style={styles.buttonContainer}>
         {!editing ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => setEditing(true)}
           >
@@ -87,13 +88,13 @@ const StudentProfileScreen = () => {
           </TouchableOpacity>
         ) : (
           <View style={styles.editActions}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={handleCancel}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSave}
               disabled={saving}
@@ -225,11 +226,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8
+    marginBottom: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 10px rgba(37,99,235,0.3)',
+      }
+    })
   },
   avatarText: {
     fontSize: 36,

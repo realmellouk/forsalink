@@ -7,7 +7,10 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
-  TextInput
+  TextInput,
+  Alert,
+  Image,
+  Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -102,6 +105,7 @@ const StudentHomeScreen = ({ navigation }) => {
       }
     } catch (err) {
       console.error('Bookmark error:', err);
+      Alert.alert('Error', 'Failed to update bookmark. Please try again.');
     }
   };
 
@@ -247,7 +251,10 @@ const StudentHomeScreen = ({ navigation }) => {
       {/* Job List */}
       {filteredJobs.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>📭</Text>
+          <Image
+            source={require('../../../assets/empty-jobs.png')}
+            style={styles.emptyImage}
+          />
           <Text style={styles.emptyText}>No jobs found</Text>
           <Text style={styles.emptySubtext}>
             {searchQuery || filters.jobType !== 'all'
@@ -372,11 +379,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 15,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }
+    }),
     borderWidth: 1,
     borderColor: '#f3f4f6'
   },
@@ -483,10 +499,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40
+    padding: 20
   },
-  emptyIcon: {
-    fontSize: 80,
+  emptyImage: {
+    width: 200,
+    height: 150,
+    resizeMode: 'contain',
     marginBottom: 20
   },
   emptyText: {

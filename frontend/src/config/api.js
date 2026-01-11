@@ -1,5 +1,5 @@
 // API Configuration
-export const API_URL = 'http://192.168.11.123:3000/api'; // Change to YOUR IP!
+export const API_URL = 'http://localhost:3000/api'; // Change to YOUR IP!
 
 // Custom error class
 class APIError extends Error {
@@ -55,7 +55,7 @@ export const api = {
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
     }
   },
-// bookmarks
+  // bookmarks
   getBookmarks: async (studentId) => {
     try {
       const response = await fetch(`${API_URL}/bookmarks/${studentId}`);
@@ -69,7 +69,7 @@ export const api = {
       if (error instanceof APIError) throw error;
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
     }
-  },  
+  },
   addBookmark: async (studentId, jobId) => {
     try {
       const response = await fetch(`${API_URL}/bookmarks`, {
@@ -103,23 +103,8 @@ export const api = {
       if (error instanceof APIError) throw error;
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
     }
-  },  
-  removeBookmarks: async (  studentId, jobId) => {
-    try {
-      const response = await fetch(`${API_URL}/bookmarks/${studentId}/${jobId}`, {
-        method: 'DELETE'
-      });
+  },
 
-      if (!response.ok) {
-        throw new APIError('Failed to remove bookmark. Please try again.', 'server');
-      }
-
-      return response.json();
-    } catch (error) {
-      if (error instanceof APIError) throw error;
-      throw new APIError('Cannot connect to server. Check your internet.', 'network');
-    }
-  },  
   checkBookmark: async (studentId, jobId) => {
     try {
       const response = await fetch(`${API_URL}/bookmarks/check/${studentId}/${jobId}`);
@@ -133,7 +118,7 @@ export const api = {
       if (error instanceof APIError) throw error;
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
     }
-  },  
+  },
   // Jobs
   getJobs: async () => {
     try {
@@ -258,6 +243,30 @@ export const api = {
     } catch (error) {
       if (error instanceof APIError) throw error;
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  getJobApplications: async (jobId) => {
+    try {
+      const response = await fetch(`${API_URL}/jobs/${jobId}/applications`);
+      if (!response.ok) throw new Error('Failed to load applications');
+      return response.json();
+    } catch (error) {
+      throw new APIError(error.message, 'network');
+    }
+  },
+
+  updateApplicationStatus: async (applicationId, status) => {
+    try {
+      const response = await fetch(`${API_URL}/applications/${applicationId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) throw new Error('Failed to update status');
+      return response.json();
+    } catch (error) {
+      throw new APIError(error.message, 'network');
     }
   },
 

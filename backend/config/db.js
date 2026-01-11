@@ -6,8 +6,9 @@ const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: '', // Default XAMPP password is empty
-  database: 'forsalinkk',
-  port: 3307, 
+  database: 'forsalink',
+  port: 3307,
+  
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
