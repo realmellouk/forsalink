@@ -52,7 +52,7 @@ router.post('/login', async (req, res) => {
 
     if (users.length === 0) {
       console.log('User not found');
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'User with this email not found' });
     }
 
     const user = users[0];
@@ -61,7 +61,7 @@ router.post('/login', async (req, res) => {
     // Check password (Note: In production, use bcrypt to compare hashed passwords!)
     if (user.password !== cleanPassword) {
       console.log(`Password mismatch. Input: '${cleanPassword}', Stored: '${user.password}'`);
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Incorrect password' });
     }
 
     // Return user data (exclude password)

@@ -1,5 +1,5 @@
 // API Configuration
-export const API_URL = 'http://localhost:3000/api'; // Change to YOUR IP!
+export const API_URL = 'http://192.168.11.123:3000/api'; // Change to YOUR IP!
 
 // Custom error class
 class APIError extends Error {

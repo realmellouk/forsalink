@@ -51,7 +51,10 @@ const LoginScreen = ({ navigation, route }) => {
 
     setLoading(true);
     try {
-      const response = await api.login(email, password);
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+
+      const response = await api.login(trimmedEmail, trimmedPassword);
 
       if (response.error) {
         Alert.alert('Login Failed', response.error);
@@ -89,6 +92,8 @@ const LoginScreen = ({ navigation, route }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
             />
           </View>
 
@@ -101,6 +106,8 @@ const LoginScreen = ({ navigation, route }) => {
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
+              autoComplete="off"
+              textContentType="none"
             />
           </View>
 

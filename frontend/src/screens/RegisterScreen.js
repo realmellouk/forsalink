@@ -158,6 +158,8 @@ const RegisterScreen = ({ navigation }) => {
                 placeholder={role === 'student' ? 'e.g. Ahmed El Amrani' : 'e.g. TechCorp Morocco'}
                 value={fullName}
                 onChangeText={setFullName}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -171,6 +173,8 @@ const RegisterScreen = ({ navigation }) => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -183,6 +187,8 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -195,6 +201,8 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setConfirmPassword}
                 secureTextEntry
                 autoCapitalize="none"
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -211,6 +219,8 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setBio}
                 multiline
                 numberOfLines={4}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
