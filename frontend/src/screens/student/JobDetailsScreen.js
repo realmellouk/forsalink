@@ -1,13 +1,14 @@
 // Job Details Screen
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
+import {
+  View,
+  Text,
   ScrollView,
-  TouchableOpacity, 
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -18,7 +19,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  
+
 
   useEffect(() => {
     loadJobDetails();
@@ -42,13 +43,13 @@ const JobDetailsScreen = ({ route, navigation }) => {
       'Your application will be sent to the company.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
+        {
           text: 'Apply',
           onPress: async () => {
             setApplying(true);
             try {
               const response = await api.applyToJob(jobId, user.id);
-              
+
               if (response.error) {
                 Alert.alert('Error', response.error);
               } else {
@@ -144,10 +145,10 @@ const JobDetailsScreen = ({ route, navigation }) => {
         {/* Posted Date */}
         <View style={styles.dateSection}>
           <Text style={styles.dateText}>
-            Posted on {new Date(job.created_at).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            Posted on {new Date(job.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })}
           </Text>
         </View>
@@ -157,7 +158,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
 
       {/* Apply Button (Fixed at bottom) */}
       <View style={styles.applyContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.applyButton}
           onPress={handleApply}
           disabled={applying}
@@ -202,11 +203,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '0 4px 8px rgba(37,99,235,0.3)',
+      }
+    })
   },
   companyLogoText: {
     fontSize: 30,
@@ -288,22 +298,41 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10
+    borderTopColor: '#e5e7eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+      }
+    })
   },
   applyButton: {
     backgroundColor: '#2563eb',
     borderRadius: 12,
     padding: 18,
     alignItems: 'center',
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 10px rgba(37,99,235,0.4)',
+      }
+    })
   },
   applyButtonText: {
     color: '#ffffff',

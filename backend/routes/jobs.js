@@ -65,14 +65,39 @@ router.get('/company/:companyId', async (req, res) => {
   }
 });
 
+// Get applications for a specific job (company only)
+router.get('/:id/applications', async (req, res) => {
+  try {
+    const [applications] = await db.query(`
+      SELECT 
+        applications.*,
+        users.full_name as student_name,
+        users.email as student_email,
+        users.bio as student_bio,
+        users.level_of_study,
+        users.cv_link,
+        users.interests
+      FROM applications
+      JOIN users ON applications.student_id = users.id
+      WHERE applications.job_id = ?
+      ORDER BY applications.applied_at DESC
+    `, [req.params.id]);
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Get job applications error:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
 // Create new job (company only)
 router.post('/', async (req, res) => {
   try {
-    const { title, description, job_type, location, salary, requirements, company_id } = req.body;
+    const { title, description, job_type, location, salary, requirements, company_id, job_deadline } = req.body;
 
     const [result] = await db.query(
-      'INSERT INTO jobs (title, description, job_type, location, salary, requirements, company_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [title, description, job_type, location, salary, requirements, company_id]
+      'INSERT INTO jobs (title, description, job_type, location, salary, requirements, company_id, job_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [title, description, job_type, location, salary, requirements, company_id, job_deadline || null]
     );
 
     res.status(201).json({
@@ -88,11 +113,11 @@ router.post('/', async (req, res) => {
 // Update job
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, job_type, location, salary, requirements, status } = req.body;
+    const { title, description, job_type, location, salary, requirements, status, job_deadline } = req.body;
 
     await db.query(
-      'UPDATE jobs SET title = ?, description = ?, job_type = ?, location = ?, salary = ?, requirements = ?, status = ? WHERE id = ?',
-      [title, description, job_type, location, salary, requirements, status, req.params.id]
+      'UPDATE jobs SET title = ?, description = ?, job_type = ?, location = ?, salary = ?, requirements = ?, status = ?, job_deadline = ? WHERE id = ?',
+      [title, description, job_type, location, salary, requirements, status, job_deadline || null, req.params.id]
     );
 
     res.json({ message: 'Job updated successfully' });

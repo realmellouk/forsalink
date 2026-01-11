@@ -1,11 +1,11 @@
 // Login Screen
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useUser } from '../utils/UserContext';
 import { api } from '../config/api';
+import Button from '../components/Button';
 
 const LoginScreen = ({ navigation, route }) => {
   // Pre-fill email and password if coming from registration
@@ -32,15 +33,15 @@ const LoginScreen = ({ navigation, route }) => {
   }, [route?.params]);
 
   // Auto-redirect if user is already logged in
-  // useEffect(() => {
-  //   if (user) {
-  //     if (user.role === 'student') {
-  //       navigation.replace('StudentMain');
-  //     } else {
-  //       navigation.replace('CompanyMain');
-  //     }
-  //   }
-  // }, [user, navigation]);
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'student') {
+        navigation.replace('StudentMain');
+      } else {
+        navigation.replace('CompanyMain');
+      }
+    }
+  }, [user, navigation]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -50,8 +51,11 @@ const LoginScreen = ({ navigation, route }) => {
 
     setLoading(true);
     try {
-      const response = await api.login(email, password);
-      
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+
+      const response = await api.login(trimmedEmail, trimmedPassword);
+
       if (response.error) {
         Alert.alert('Login Failed', response.error);
       } else {
@@ -59,14 +63,14 @@ const LoginScreen = ({ navigation, route }) => {
         // Navigation happens automatically via UserContext
       }
     } catch (error) {
-      Alert.alert('Error', 'Connection failed. Make sure backend is running.');
+      Alert.alert('Error', error.message || 'Connection failed. Make sure backend is running.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -88,6 +92,8 @@ const LoginScreen = ({ navigation, route }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
             />
           </View>
 
@@ -100,20 +106,17 @@ const LoginScreen = ({ navigation, route }) => {
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
+              autoComplete="off"
+              textContentType="none"
             />
           </View>
 
-          <TouchableOpacity 
-            style={styles.loginButton} 
+          <Button
+            title="Login"
             onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.loginButtonText}>Login</Text>
-            )}
-          </TouchableOpacity>
+            loading={loading}
+            style={{ marginTop: 10 }}
+          />
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
@@ -121,19 +124,13 @@ const LoginScreen = ({ navigation, route }) => {
             <View style={styles.dividerLine} />
           </View>
 
-          <TouchableOpacity 
-            style={styles.registerButton}
+          <Button
+            title="Create New Account"
             onPress={() => navigation.navigate('Register')}
-          >
-            <Text style={styles.registerButtonText}>Create New Account</Text>
-          </TouchableOpacity>
+            variant="outline"
+          />
         </View>
 
-        <View style={styles.testAccounts}>
-          <Text style={styles.testTitle}>🧪 Test Accounts:</Text>
-          <Text style={styles.testAccount}>Student: sarah@student.ma / student123</Text>
-          <Text style={styles.testAccount}>Company: contact@techcorp.ma / company123</Text>
-        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -188,23 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1f2937'
   },
-  loginButton: {
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5
-  },
-  loginButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
+
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -247,11 +228,7 @@ const styles = StyleSheet.create({
     color: '#92400e',
     marginBottom: 8
   },
-  testAccount: {
-    fontSize: 12,
-    color: '#92400e',
-    marginTop: 4
-  }
+
 });
 
 export default LoginScreen;

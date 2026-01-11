@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const jobsRoutes = require('./routes/jobs');
 const usersRoutes = require('./routes/users');
 const notificationsRoutes = require('./routes/notifications');
+const applicationsRoutes = require('./routes/applications');
 
 const app = express();
 const PORT = 3000;
@@ -24,6 +25,7 @@ app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/bookmarks', bookmarksRoutes);
+app.use('/api/applications', applicationsRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ message: 'ForsaLink API is running!' });

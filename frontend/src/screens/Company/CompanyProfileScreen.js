@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator ,Image} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
-import ErrorMessage from '../../components/ErrorMessage'; 
+import ErrorMessage from '../../components/ErrorMessage';
 
 const CompanyProfileScreen = () => {
   const { user, updateUser, logout } = useUser();
@@ -20,7 +20,7 @@ const CompanyProfileScreen = () => {
       setEditing(false);
       Alert.alert('Success', 'Profile updated!');
     } catch (error) {
-        setError('Update failed');
+      setError('Update failed');
     } finally {
       setSaving(false);
     }
@@ -37,36 +37,22 @@ const CompanyProfileScreen = () => {
       // For mobile
       Alert.alert('Logout', 'Are you sure you want to logout?', [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive', 
+        {
+          text: 'Logout',
+          style: 'destructive',
           onPress: () => logout()
         }
       ]);
     }
   };
-  const loadJobs = async () => {
-    try {
-      setError(null);
-      const data = await api.getCompanyJobs(user.id);
-      setJobs(data);
-    } catch (error) {
-    console.error('Load jobs error:', error);
-    setError('Unable to load your jobs. Please check your connection.');
-  } finally {
-    setLoading(false);
-    setRefreshing(false);
-    }
-  };
-
   //retry handler
   const handlerRetry = () => {
-    setLoading(true);
-    loadJobs();
-  };  
+    setError(null);
+    handleSave();
+  };
 
   //befor return statement
-  if (error){
+  if (error) {
     return <ErrorMessage message={error} onRetry={handlerRetry} />;
   }
 
@@ -114,12 +100,12 @@ const CompanyProfileScreen = () => {
           <View style={styles.field}>
             <Text style={styles.label}>Description</Text>
             {editing ? (
-              <TextInput 
-                style={[styles.input, styles.textArea]} 
-                value={companyDescription} 
-                onChangeText={setCompanyDescription} 
-                multiline 
-                numberOfLines={5} 
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={companyDescription}
+                onChangeText={setCompanyDescription}
+                multiline
+                numberOfLines={5}
               />
             ) : (
               <Text style={styles.value}>{companyDescription || 'No description'}</Text>
@@ -141,7 +127,29 @@ const CompanyProfileScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   header: { backgroundColor: '#fff', padding: 30, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#2563eb', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#2563eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 10px rgba(37,99,235,0.3)',
+      }
+    })
+  },
   avatarText: { fontSize: 36, fontWeight: 'bold', color: '#fff' },
   name: { fontSize: 24, fontWeight: 'bold', color: '#1f2937', marginBottom: 5 },
   email: { fontSize: 14, color: '#6b7280', marginBottom: 15 },
@@ -162,18 +170,27 @@ const styles = StyleSheet.create({
   value: { fontSize: 16, color: '#1f2937' },
   input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 12, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
-  logoutButton: { 
-    backgroundColor: '#ef4444', 
-    margin: 20, 
+  logoutButton: {
+    backgroundColor: '#ef4444',
+    margin: 20,
     marginTop: 10,
-    padding: 15, 
-    borderRadius: 10, 
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3
+    ...Platform.select({
+      ios: {
+        shadowColor: '#ef4444',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 4px rgba(239,68,68,0.3)',
+      }
+    })
   },
   logoutText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });

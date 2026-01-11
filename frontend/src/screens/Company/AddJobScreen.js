@@ -1,14 +1,15 @@
 // Add Job Screen
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
+import {
+  View,
+  Text,
   TextInput,
-  TouchableOpacity, 
+  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -18,7 +19,7 @@ const AddJobScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [jobType, setJobType] = useState('part-time');
-  const [location, setLocation] = useState(''); 
+  const [location, setLocation] = useState('');
   const [salary, setSalary] = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,15 +46,15 @@ const AddJobScreen = ({ navigation }) => {
       };
 
       const response = await api.createJob(jobData);
-      
+
       if (response.error) {
         Alert.alert('Error', response.error);
       } else {
         Alert.alert(
           'Success!',
           'Job posted successfully',
-          [{ 
-            text: 'OK', 
+          [{
+            text: 'OK',
             onPress: () => {
               // Reset form
               setTitle('');
@@ -188,7 +189,7 @@ const AddJobScreen = ({ navigation }) => {
           </View>
 
           {/* Submit Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.submitButton}
             disabled={loading}
             onPress={() => {
@@ -241,14 +242,23 @@ const styles = StyleSheet.create({
     color: '#6b7280'
   },
   form: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }
+    })
   },
   field: {
     marginBottom: 20

@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
 
     // Check if email already exists
     const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    
+
     if (existing.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -43,19 +43,25 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
 
     // Find user by email
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [cleanEmail]);
+    console.log(`Login attempt for '${cleanEmail}'`);
 
     if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      console.log('User not found');
+      return res.status(401).json({ error: 'User with this email not found' });
     }
 
     const user = users[0];
+    console.log(`User found: ${user.email}, Role: ${user.role}`);
 
     // Check password (Note: In production, use bcrypt to compare hashed passwords!)
-    if (user.password !== password) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    if (user.password !== cleanPassword) {
+      console.log(`Password mismatch. Input: '${cleanPassword}', Stored: '${user.password}'`);
+      return res.status(401).json({ error: 'Incorrect password' });
     }
 
     // Return user data (exclude password)

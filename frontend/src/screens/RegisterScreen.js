@@ -1,16 +1,18 @@
 // Register Screen
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   Alert,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { api } from '../config/api';
+import Button from '../components/Button';
 
 const RegisterScreen = ({ navigation }) => {
   const [role, setRole] = useState(null); // 'student' or 'company'
@@ -58,27 +60,31 @@ const RegisterScreen = ({ navigation }) => {
     try {
       const userData = {
         full_name: fullName,
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
         role,
         bio: role === 'student' ? bio : null,
-        company_description: role === 'company' ? bio : null
+        company_description: role === 'company' ? bio : null,
+        level_of_study: null,
+        interests: null,
+        cv_link: null,
+        company_logo: null
       };
 
       const response = await api.register(userData);
-      
+
       if (response.error) {
         Alert.alert('Registration Failed', response.error);
       } else {
         Alert.alert(
-          'Success!', 
+          'Success!',
           'Account created successfully. Please login.',
-          [{ 
-            text: 'OK', 
-            onPress: () => navigation.navigate('Login', { 
-              email: email, 
-              password: password 
-            }) 
+          [{
+            text: 'OK',
+            onPress: () => navigation.navigate('Login', {
+              email: email,
+              password: password
+            })
           }]
         );
       }
@@ -101,8 +107,8 @@ const RegisterScreen = ({ navigation }) => {
         {!role ? (
           <View style={styles.roleSelection}>
             <Text style={styles.sectionTitle}>I am a...</Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.roleCard}
               onPress={() => setRole('student')}
             >
@@ -113,7 +119,7 @@ const RegisterScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.roleCard}
               onPress={() => setRole('company')}
             >
@@ -124,7 +130,7 @@ const RegisterScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -152,6 +158,8 @@ const RegisterScreen = ({ navigation }) => {
                 placeholder={role === 'student' ? 'e.g. Ahmed El Amrani' : 'e.g. TechCorp Morocco'}
                 value={fullName}
                 onChangeText={setFullName}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -165,6 +173,8 @@ const RegisterScreen = ({ navigation }) => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -177,6 +187,8 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -189,6 +201,8 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setConfirmPassword}
                 secureTextEntry
                 autoCapitalize="none"
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
@@ -198,36 +212,33 @@ const RegisterScreen = ({ navigation }) => {
               </Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder={role === 'student' 
-                  ? 'Tell us about yourself...' 
+                placeholder={role === 'student'
+                  ? 'Tell us about yourself...'
                   : 'Describe your company...'}
                 value={bio}
                 onChangeText={setBio}
                 multiline
                 numberOfLines={4}
+                autoComplete="off"
+                textContentType="none"
               />
             </View>
 
-            <TouchableOpacity 
-              style={styles.registerButton} 
+            <Button
+              title="Create Account"
               onPress={handleRegister}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text style={styles.registerButtonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
+              loading={loading}
+              style={{ marginTop: 10 }}
+            />
 
-            <TouchableOpacity 
-              style={styles.loginButton}
+            <Button
+              title="Go to Login"
               onPress={handleNavigateToLogin}
-            >
-              <Text style={styles.loginButtonText}>Go to Login</Text>
-            </TouchableOpacity>
+              variant="outline"
+              style={{ marginTop: 15 }}
+            />
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.loginLink}
               onPress={handleNavigateToLogin}
             >
@@ -282,11 +293,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      }
+    })
   },
   roleIcon: {
     fontSize: 50,
@@ -356,37 +376,6 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: 'top'
-  },
-  registerButton: {
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5
-  },
-  registerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
-  loginButton: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#2563eb',
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 15
-  },
-  loginButtonText: {
-    color: '#2563eb',
-    fontSize: 16,
-    fontWeight: 'bold'
   },
   loginLink: {
     marginTop: 20,
