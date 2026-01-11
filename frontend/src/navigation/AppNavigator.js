@@ -12,9 +12,8 @@ import { useUser } from '../utils/UserContext';
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-import JobFilters from '../screens/student/JobFilters'; 
-import ErrorMessage from '../components/ErrorMessage';  
-import BookmarkScreen from '../screens/student/BookmarkScreen';
+
+import BookmarksScreen from '../screens/student/BookmarksScreen';
 // Student screens
 import StudentHomeScreen from '../screens/student/StudentHomeScreen';
 import JobDetailsScreen from '../screens/student/JobDetailsScreen';
@@ -49,44 +48,44 @@ const StudentTabs = () => {
       screenOptions={{
         tabBarActiveTintColor: '#2563eb',
         tabBarInactiveTintColor: '#9ca3af',
-        tabBarStyle: { 
-          paddingBottom: 5, 
-          paddingTop: 5, 
+        tabBarStyle: {
+          paddingBottom: 5,
+          paddingTop: 5,
           height: 60,
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb'
         }
       }}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name="Home"
         component={StudentHomeScreen}
-        options={{ 
+        options={{
           headerShown: true,
           tabBarLabel: 'Jobs',
           tabBarIcon: HomeIcon
         }}
       />
-      <Tab.Screen 
-        name="Notifications" 
+      <Tab.Screen
+        name="Notifications"
         component={NotificationsScreen}
-        options={{ 
+        options={{
           tabBarLabel: 'Alerts',
           tabBarIcon: BellIcon
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={StudentProfileScreen}
-        options={{ 
+        options={{
           tabBarLabel: 'Profile',
           tabBarIcon: UserIcon
         }}
       />
-      <Tab.Screen 
-        name="Settings" 
+      <Tab.Screen
+        name="Settings"
         component={SettingsScreen}
-        options={{ 
+        options={{
           tabBarLabel: 'Settings',
           tabBarIcon: SettingsIcon
         }}
@@ -95,15 +94,15 @@ const StudentTabs = () => {
   );
 };
 <Tab.Screen
-name="Bookmarks"
-component={BookmarkScreen}
-options={{
-  headerShown: true,
-  tabBarLabel: 'Saved',
-  tabBarIcon: ()=>(
-    <Text style={{ fontSize: 24 }}>❤️</Text>
-  )
-}}
+  name="Bookmarks"
+  component={BookmarksScreen}
+  options={{
+    headerShown: true,
+    tabBarLabel: 'Saved',
+    tabBarIcon: () => (
+      <Text style={{ fontSize: 24 }}>❤️</Text>
+    )
+  }}
 />
 // Company Tab Navigator
 const CompanyTabs = () => {
@@ -112,46 +111,46 @@ const CompanyTabs = () => {
       screenOptions={{
         tabBarActiveTintColor: '#2563eb',
         tabBarInactiveTintColor: '#9ca3af',
-        tabBarStyle: { 
-          paddingBottom: 5, 
-          paddingTop: 5, 
+        tabBarStyle: {
+          paddingBottom: 5,
+          paddingTop: 5,
           height: 60,
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb'
         }
       }}
     >
-      <Tab.Screen 
-        name="Dashboard" 
+      <Tab.Screen
+        name="Dashboard"
         component={CompanyDashboardScreen}
-        options={{ 
+        options={{
           headerShown: true,
           tabBarLabel: 'Jobs',
           tabBarIcon: BriefcaseIcon
         }}
       />
-      <Tab.Screen 
-        name="AddJob" 
+      <Tab.Screen
+        name="AddJob"
         component={AddJobScreen}
-        options={{ 
+        options={{
           headerShown: true,
           title: 'Post Job',
           tabBarLabel: 'Post',
           tabBarIcon: PlusIcon
         }}
       />
-      <Tab.Screen 
-        name="Notifications" 
+      <Tab.Screen
+        name="Notifications"
         component={NotificationsScreen}
-        options={{ 
+        options={{
           tabBarLabel: 'Alerts',
           tabBarIcon: BellIcon
         }}
       />
-      <Tab.Screen 
-        name="CompanyProfile" 
+      <Tab.Screen
+        name="CompanyProfile"
         component={CompanyProfileScreen}
-        options={{ 
+        options={{
           headerShown: true,
           title: 'Profile',
           tabBarLabel: 'Profile',
@@ -184,8 +183,8 @@ const AppNavigator = () => {
           // Student screens
           <>
             <Stack.Screen name="StudentMain" component={StudentTabs} />
-            <Stack.Screen 
-              name="JobDetails" 
+            <Stack.Screen
+              name="JobDetails"
               component={JobDetailsScreen}
               options={{ headerShown: true, title: 'Job Details' }}
             />
@@ -194,8 +193,8 @@ const AppNavigator = () => {
           // Company screens
           <>
             <Stack.Screen name="CompanyMain" component={CompanyTabs} />
-            <Stack.Screen 
-              name="EditJob" 
+            <Stack.Screen
+              name="EditJob"
               component={EditJobScreen}
               options={{ headerShown: true, title: 'Edit Job' }}
             />
