@@ -14,7 +14,7 @@ import {
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
 
-const StudentProfileScreen = () => {
+const StudentProfileScreen = ({ navigation }) => {
   const { user, updateUser } = useUser();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -80,12 +80,28 @@ const StudentProfileScreen = () => {
       {/* Edit/Save Buttons */}
       <View style={styles.buttonContainer}>
         {!editing ? (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => setEditing(true)}
-          >
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setEditing(true)}
+            >
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.bookmarksButton}
+              onPress={() => navigation.navigate('Bookmarks')}
+            >
+              <Text style={styles.bookmarksButtonText}>❤️ My Bookmarks</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.bookmarksButton}
+              onPress={() => navigation.navigate('AppliedJobs')}
+            >
+              <Text style={styles.bookmarksButtonText}>💼 My Applications</Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <View style={styles.editActions}>
             <TouchableOpacity
@@ -280,6 +296,20 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  bookmarksButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb'
+  },
+  bookmarksButtonText: {
+    color: '#1f2937',
     fontSize: 16,
     fontWeight: 'bold'
   },

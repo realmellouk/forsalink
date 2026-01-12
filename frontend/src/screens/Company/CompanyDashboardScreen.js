@@ -1,14 +1,15 @@
 // Company Dashboard Screen - Manage Jobs
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -49,26 +50,39 @@ const CompanyDashboardScreen = ({ navigation }) => {
   };
 
   const handleDelete = (jobId, title) => {
-    Alert.alert(
-      'Delete Job',
-      `Are you sure you want to delete "${title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.deleteJob(jobId);
-              loadJobs();
-              Alert.alert('Success', 'Job deleted successfully');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete job');
-            }
+    console.log(`🗑️ handleDelete called for jobId: ${jobId}, title: ${title}`);
+
+    const performDelete = async () => {
+      console.log(`⏳ Proceeding with deletion of job ID: ${jobId}`);
+      try {
+        const response = await api.deleteJob(jobId);
+        console.log('✅ Delete response from API:', response);
+        loadJobs();
+        Alert.alert('Success', 'Job deleted successfully');
+      } catch (error) {
+        console.error('❌ Error in handleDelete:', error);
+        Alert.alert('Error', `Failed to delete job: ${error.message}`);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        'Delete Job',
+        `Are you sure you want to delete "${title}"?`,
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => console.log('❌ Deletion cancelled by user') },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: performDelete
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const renderJobCard = ({ item }) => (
@@ -77,8 +91,8 @@ const CompanyDashboardScreen = ({ navigation }) => {
         <View style={styles.jobInfo}>
           <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
           <View style={styles.jobMeta}>
-            <View style={[styles.statusBadge, 
-              item.status === 'active' ? styles.statusActive : styles.statusClosed]}>
+            <View style={[styles.statusBadge,
+            item.status === 'active' ? styles.statusActive : styles.statusClosed]}>
               <Text style={styles.statusText}>
                 {item.status === 'active' ? '🟢 Active' : '🔴 Closed'}
               </Text>
@@ -91,7 +105,7 @@ const CompanyDashboardScreen = ({ navigation }) => {
       {item.location && (
         <Text style={styles.location}>📍 {item.location}</Text>
       )}
-      
+
       <Text style={styles.description} numberOfLines={2}>
         {item.description}
       </Text>
@@ -100,14 +114,18 @@ const CompanyDashboardScreen = ({ navigation }) => {
         <Text style={styles.date}>
           Posted {new Date(item.created_at).toLocaleDateString()}
         </Text>
+        <Text style={styles.date}>
+          Deadline {new Date(item.job_deadline).toLocaleDateString()}
+        </Text>
+        
         <View style={styles.actions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('EditJob', { job: item })}
           >
             <Text style={styles.editButtonText}>✏️ Edit</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.deleteButton}
             onPress={() => handleDelete(item.id, item.title)}
           >
@@ -138,7 +156,7 @@ const CompanyDashboardScreen = ({ navigation }) => {
           <Text style={styles.emptyIcon}>📝</Text>
           <Text style={styles.emptyText}>No jobs posted yet</Text>
           <Text style={styles.emptySubtext}>Create your first job posting!</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.createFirstButton}
             onPress={() => navigation.navigate('AddJob')}
           >

@@ -8,7 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  Platform
+  Platform,
+  SafeAreaView
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -19,6 +20,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
 
   useEffect(() => {
@@ -27,8 +29,12 @@ const JobDetailsScreen = ({ route, navigation }) => {
 
   const loadJobDetails = async () => {
     try {
-      const data = await api.getJob(jobId);
-      setJob(data);
+      const [jobData, appsData] = await Promise.all([
+        api.getJob(jobId),
+        api.getUserApplications(user.id)
+      ]);
+      setJob(jobData);
+      setHasApplied(appsData.some(app => app.job_id === parseInt(jobId)));
     } catch (error) {
       console.error('Load job error:', error);
       Alert.alert('Error', 'Failed to load job details');
@@ -88,7 +94,11 @@ const JobDetailsScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.companyLogo}>
@@ -109,6 +119,21 @@ const JobDetailsScreen = ({ route, navigation }) => {
               </View>
             )}
           </View>
+
+          {/* New Inline Apply Button */}
+          <TouchableOpacity
+            style={[styles.headerApplyButton, hasApplied && styles.appliedButton]}
+            onPress={handleApply}
+            disabled={applying || hasApplied}
+          >
+            {applying ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : (
+              <Text style={styles.headerApplyButtonText}>
+                {hasApplied ? 'Status: Applied ✓' : 'Apply Now '}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Salary */}
@@ -151,25 +176,17 @@ const JobDetailsScreen = ({ route, navigation }) => {
               day: 'numeric'
             })}
           </Text>
+          <Text style={styles.dateText}>
+            Deadline {new Date(job.job_deadline).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </Text>
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
-
-      {/* Apply Button (Fixed at bottom) */}
-      <View style={styles.applyContainer}>
-        <TouchableOpacity
-          style={styles.applyButton}
-          onPress={handleApply}
-          disabled={applying}
-        >
-          {applying ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.applyButtonText}>Apply Now 🚀</Text>
-          )}
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -188,9 +205,12 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1
   },
+  scrollContent: {
+    paddingBottom: 20
+  },
   header: {
     backgroundColor: '#ffffff',
-    padding: 25,
+    padding: 20,
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
@@ -287,57 +307,46 @@ const styles = StyleSheet.create({
   },
   dateSection: {
     padding: 20,
-    alignItems: 'center'
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+
   },
   dateText: {
     fontSize: 13,
     color: '#9ca3af'
   },
-  applyContainer: {
-    backgroundColor: '#ffffff',
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    borderTopColor: '#e5e7eb',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 10,
-      },
-      web: {
-        boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
-      }
-    })
-  },
-  applyButton: {
+  headerApplyButton: {
     backgroundColor: '#2563eb',
     borderRadius: 12,
-    padding: 18,
+    paddingHorizontal: 30,
+    paddingVertical: 14,
+    marginTop: 20,
+    width: '80%',
     alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#2563eb',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 8,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 4px 10px rgba(37,99,235,0.4)',
+        boxShadow: '0 4px 8px rgba(37,99,235,0.3)',
       }
     })
   },
-  applyButtonText: {
+  headerApplyButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold'
+  },
+  appliedButton: {
+    backgroundColor: '#10b981',
+    opacity: 0.9
   },
   errorText: {
     fontSize: 16,

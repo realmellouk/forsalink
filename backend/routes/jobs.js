@@ -92,20 +92,27 @@ router.get('/:id/applications', async (req, res) => {
 
 // Create new job (company only)
 router.post('/', async (req, res) => {
+  console.log('📝 Received request to create job:', req.body);
   try {
     const { title, description, job_type, location, salary, requirements, company_id, job_deadline } = req.body;
+
+    if (!title || !description || !company_id) {
+      console.warn('⚠️ Missing required fields for job creation');
+      return res.status(400).json({ error: 'Title, description, and company_id are required' });
+    }
 
     const [result] = await db.query(
       'INSERT INTO jobs (title, description, job_type, location, salary, requirements, company_id, job_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [title, description, job_type, location, salary, requirements, company_id, job_deadline || null]
     );
 
+    console.log('✅ Job created successfully with ID:', result.insertId);
     res.status(201).json({
       message: 'Job created successfully',
       jobId: result.insertId
     });
   } catch (error) {
-    console.error('Create job error:', error);
+    console.error('❌ Create job error:', error);
     res.status(500).json({ error: 'Failed to create job' });
   }
 });
@@ -129,11 +136,20 @@ router.put('/:id', async (req, res) => {
 
 // Delete job
 router.delete('/:id', async (req, res) => {
+  const jobId = req.params.id;
+  console.log(`🗑️ Attempting to delete job ID: ${jobId}`);
   try {
-    await db.query('DELETE FROM jobs WHERE id = ?', [req.params.id]);
+    const [result] = await db.query('DELETE FROM jobs WHERE id = ?', [jobId]);
+    console.log(`✅ Delete result for job ID ${jobId}:`, result);
+
+    if (result.affectedRows === 0) {
+      console.warn(`⚠️ No job found with ID: ${jobId}`);
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
     res.json({ message: 'Job deleted successfully' });
   } catch (error) {
-    console.error('Delete job error:', error);
+    console.error(`❌ Error deleting job ID ${jobId}:`, error);
     res.status(500).json({ error: 'Failed to delete job' });
   }
 });

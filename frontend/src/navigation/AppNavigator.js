@@ -13,11 +13,12 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 
-import BookmarksScreen from '../screens/student/BookmarksScreen';
-// Student screens
+
 import StudentHomeScreen from '../screens/student/StudentHomeScreen';
 import JobDetailsScreen from '../screens/student/JobDetailsScreen';
 import StudentProfileScreen from '../screens/student/StudentProfileScreen';
+import BookmarksScreen from '../screens/student/BookmarksScreen';
+import AppliedJobsScreen from '../screens/student/AppliedJobsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 
 // Company screens
@@ -41,6 +42,7 @@ const BriefcaseIcon = () => <Text style={{ fontSize: 24 }}>💼</Text>;
 const PlusIcon = () => <Text style={{ fontSize: 24 }}>➕</Text>;
 const BuildingIcon = () => <Text style={{ fontSize: 24 }}>🏢</Text>;
 
+
 // Student Tab Navigator
 const StudentTabs = () => {
   return (
@@ -58,7 +60,7 @@ const StudentTabs = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="StudentHomeScreen"
         component={StudentHomeScreen}
         options={{
           headerShown: true,
@@ -93,17 +95,7 @@ const StudentTabs = () => {
     </Tab.Navigator>
   );
 };
-<Tab.Screen
-  name="Bookmarks"
-  component={BookmarksScreen}
-  options={{
-    headerShown: true,
-    tabBarLabel: 'Saved',
-    tabBarIcon: () => (
-      <Text style={{ fontSize: 24 }}>❤️</Text>
-    )
-  }}
-/>
+
 // Company Tab Navigator
 const CompanyTabs = () => {
   return (
@@ -187,6 +179,16 @@ const AppNavigator = () => {
               name="JobDetails"
               component={JobDetailsScreen}
               options={{ headerShown: true, title: 'Job Details' }}
+            />
+            <Stack.Screen
+              name="Bookmarks"
+              component={BookmarksScreen}
+              options={{ headerShown: true, title: 'My Bookmarks' }}
+            />
+            <Stack.Screen
+              name="AppliedJobs"
+              component={AppliedJobsScreen}
+              options={{ headerShown: true, title: 'My Applications' }}
             />
           </>
         ) : (

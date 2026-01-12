@@ -33,6 +33,7 @@ const AddJobScreen = ({ navigation }) => {
     }
 
     setLoading(true);
+    console.log(`⏳ Attempting to post job: "${title}" for company ID: ${user.id}`);
     try {
       const jobData = {
         title,
@@ -45,7 +46,9 @@ const AddJobScreen = ({ navigation }) => {
         job_deadline: jobDeadline
       };
 
+      console.log('📦 Job data to send:', jobData);
       const response = await api.createJob(jobData);
+      console.log('✅ Create job response:', response);
 
       if (response.error) {
         Alert.alert('Error', response.error);
@@ -71,7 +74,8 @@ const AddJobScreen = ({ navigation }) => {
         );
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to create job');
+      console.error('❌ Error in handleSubmit (AddJobScreen):', error);
+      Alert.alert('Error', `Failed to create job: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -192,14 +196,7 @@ const AddJobScreen = ({ navigation }) => {
           <TouchableOpacity
             style={styles.submitButton}
             disabled={loading}
-            onPress={() => {
-              handleSubmit();
-              Alert.alert(
-                'Success!',
-                'Job posted successfully',
-                [{ text: 'OK', onPress: () => navigation.navigate('Dashboard') }]
-              );
-            }}
+            onPress={handleSubmit}
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" />

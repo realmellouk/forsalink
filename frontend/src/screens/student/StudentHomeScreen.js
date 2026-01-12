@@ -22,6 +22,7 @@ const StudentHomeScreen = ({ navigation }) => {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -43,12 +44,14 @@ const StudentHomeScreen = ({ navigation }) => {
   const loadData = async () => {
     try {
       setError(null);
-      const [jobsData, bookmarksData] = await Promise.all([
+      const [jobsData, bookmarksData, appsData] = await Promise.all([
         api.getJobs(),
-        api.getBookmarks(user.id)
+        api.getBookmarks(user.id),
+        api.getUserApplications(user.id)
       ]);
       setJobs(jobsData);
       setBookmarks(bookmarksData.map(b => b.job_id));
+      setApplications(appsData.map(a => a.job_id));
     } catch (err) {
       console.error('Load data error:', err);
       setError(err);
@@ -136,7 +139,14 @@ const StudentHomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.jobInfo}>
               <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
-              <Text style={styles.companyName}>{item.company_name}</Text>
+              <View style={styles.companyRow}>
+                <Text style={styles.companyName}>{item.company_name}</Text>
+                {applications.includes(item.id) && (
+                  <View style={styles.appliedBadge}>
+                    <Text style={styles.appliedBadgeText}>Applied</Text>
+                  </View>
+                )}
+              </View>
             </View>
             <TouchableOpacity
               style={styles.bookmarkButton}
@@ -202,8 +212,18 @@ const StudentHomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.welcomeHeader}>
-        <Text style={styles.welcomeText}>Welcome, {user.full_name}! 👋</Text>
-        <Text style={styles.welcomeSubtext}>Find your next opportunity</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.welcomeText}>Welcome, {user.full_name}! 👋</Text>
+            <Text style={styles.welcomeSubtext}>Find your next opportunity</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.headerIcon}
+            onPress={() => navigation.navigate('AppliedJobs')}
+          >
+            <Text style={styles.headerIconEmoji}>💼</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -430,6 +450,41 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 14,
     color: '#6b7280'
+  },
+  companyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap'
+  },
+  appliedBadge: {
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#10b981'
+  },
+  appliedBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#10b981'
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  headerIcon: {
+    width: 45,
+    height: 45,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  headerIconEmoji: {
+    fontSize: 22
   },
   bookmarkButton: {
     padding: 5
