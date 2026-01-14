@@ -49,9 +49,14 @@ const StudentHomeScreen = ({ navigation }) => {
         api.getBookmarks(user.id),
         api.getUserApplications(user.id)
       ]);
+
+      console.log('📊 Raw applications data from API:', appsData);
+      const appIds = appsData.map(a => a.job_id);
+      console.log('📊 Mapped application IDs:', appIds);
+
       setJobs(jobsData);
       setBookmarks(bookmarksData.map(b => b.job_id));
-      setApplications(appsData.map(a => a.job_id));
+      setApplications(appIds);
     } catch (err) {
       console.error('Load data error:', err);
       setError(err);
@@ -112,6 +117,79 @@ const StudentHomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleApply = async (jobId, jobTitle) => {
+    console.log('🔵 handleApply called with:', { jobId, jobTitle, userId: user.id });
+    console.log('🔵 Current applications:', applications);
+
+    // Prevent applying if already applied
+    if (applications.includes(jobId)) {
+      console.log('⚠️ Already applied to job:', jobId);
+      if (Platform.OS === 'web') {
+        window.alert('You have already applied to this job.');
+      } else {
+        Alert.alert('Already Applied', 'You have already applied to this job.');
+      }
+      return;
+    }
+
+    // Use platform-specific confirmation
+    let confirmed = false;
+
+    if (Platform.OS === 'web') {
+      confirmed = window.confirm(`Apply to "${jobTitle}"?\n\nSubmit your application for this job?`);
+      console.log('🔵 Web confirmation result:', confirmed);
+    } else {
+      // For mobile, use Alert.alert with callback
+      Alert.alert(
+        'Apply to this job?',
+        `Submit your application for "${jobTitle}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Apply',
+            onPress: async () => {
+              await submitApplication(jobId, jobTitle);
+            }
+          }
+        ]
+      );
+      return; // Exit here for mobile since callback handles it
+    }
+
+    // For web, handle confirmation result directly
+    if (confirmed) {
+      await submitApplication(jobId, jobTitle);
+    }
+  };
+
+  const submitApplication = async (jobId, jobTitle) => {
+    console.log('✅ User confirmed application');
+    try {
+      console.log('📤 Calling api.applyToJob with:', { jobId, userId: user.id });
+      const response = await api.applyToJob(jobId, user.id);
+      console.log('📥 API Response:', response);
+
+      setApplications(prev => {
+        const updated = [...prev, jobId];
+        console.log('🔄 Updated applications:', updated);
+        return updated;
+      });
+
+      if (Platform.OS === 'web') {
+        window.alert('Success! Your application has been submitted.');
+      } else {
+        Alert.alert('Success!', 'Your application has been submitted.');
+      }
+    } catch (err) {
+      console.error('❌ Apply error:', err);
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${err.message || 'Failed to submit application. Please try again.'}`);
+      } else {
+        Alert.alert('Error', err.message || 'Failed to submit application. Please try again.');
+      }
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     loadData();
@@ -143,7 +221,6 @@ const StudentHomeScreen = ({ navigation }) => {
                 <Text style={styles.companyName}>{item.company_name}</Text>
                 {applications.includes(item.id) && (
                   <View style={styles.appliedBadge}>
-                    <Text style={styles.appliedBadgeText}>Applied</Text>
                   </View>
                 )}
               </View>
@@ -183,7 +260,27 @@ const StudentHomeScreen = ({ navigation }) => {
             <Text style={styles.date}>
               Posted {new Date(item.created_at).toLocaleDateString()}
             </Text>
-            <Text style={styles.viewDetails}>View Details →</Text>
+            {applications.includes(item.id) ? (
+              <View style={styles.appliedTag}>
+                <Text style={styles.appliedTagText}>Applied ✓</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.applyButton}
+                activeOpacity={0.7}
+                onPress={(e) => {
+                  if (e && e.stopPropagation) {
+                    e.stopPropagation();
+                  }
+                  // Delay to allow button to blur before showing alert
+                  setTimeout(() => {
+                    handleApply(item.id, item.title);
+                  }, 50);
+                }}
+              >
+                <Text style={styles.applyButtonText}>Apply Now</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -572,6 +669,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center'
+  },
+  applyButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 4px rgba(37,99,235,0.3)',
+      }
+    })
+  },
+  applyButtonText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: 'bold'
+  },
+  appliedTag: {
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#10b981'
+  },
+  appliedTagText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#10b981'
   }
 });
 

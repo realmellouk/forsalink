@@ -6,7 +6,9 @@ import {
     TouchableOpacity,
     StyleSheet,
     RefreshControl,
-    ActivityIndicator
+    ActivityIndicator,
+    Alert,
+    Platform
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
@@ -15,6 +17,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 const BookmarksScreen = ({ navigation }) => {
     const { user } = useUser();
     const [bookmarks, setBookmarks] = useState([]);
+    const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
@@ -26,8 +29,12 @@ const BookmarksScreen = ({ navigation }) => {
     const loadBookmarks = async () => {
         try {
             setError(null);
-            const data = await api.getBookmarks(user.id);
-            setBookmarks(data);
+            const [bookmarksData, appsData] = await Promise.all([
+                api.getBookmarks(user.id),
+                api.getUserApplications(user.id)
+            ]);
+            setBookmarks(bookmarksData);
+            setApplications(appsData.map(a => a.job_id));
         } catch (err) {
             console.error('Load bookmarks error:', err);
             setError(err);
@@ -43,6 +50,62 @@ const BookmarksScreen = ({ navigation }) => {
             setBookmarks(prev => prev.filter(item => item.job_id !== jobId));
         } catch (err) {
             console.error('Remove bookmark error:', err);
+        }
+    };
+
+    const handleApply = async (jobId, jobTitle) => {
+        if (applications.includes(jobId)) {
+            if (Platform.OS === 'web') {
+                window.alert('You have already applied to this job.');
+            } else {
+                Alert.alert('Already Applied', 'You have already applied to this job.');
+            }
+            return;
+        }
+
+        // Use platform-specific confirmation
+        let confirmed = false;
+
+        if (Platform.OS === 'web') {
+            confirmed = window.confirm(`Apply to "${jobTitle}"?\n\nSubmit your application for this job?`);
+        } else {
+            Alert.alert(
+                'Apply to this job?',
+                `Submit your application for "${jobTitle}"?`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Apply',
+                        onPress: async () => {
+                            await submitBookmarkApplication(jobId, jobTitle);
+                        }
+                    }
+                ]
+            );
+            return;
+        }
+
+        if (confirmed) {
+            await submitBookmarkApplication(jobId, jobTitle);
+        }
+    };
+
+    const submitBookmarkApplication = async (jobId, jobTitle) => {
+        try {
+            await api.applyToJob(jobId, user.id);
+            setApplications(prev => [...prev, jobId]);
+            if (Platform.OS === 'web') {
+                window.alert('Success! Your application has been submitted.');
+            } else {
+                Alert.alert('Success!', 'Your application has been submitted.');
+            }
+        } catch (err) {
+            console.error('Apply error:', err);
+            if (Platform.OS === 'web') {
+                window.alert(`Error: ${err.message || 'Failed to submit application. Please try again.'}`);
+            } else {
+                Alert.alert('Error', err.message || 'Failed to submit application. Please try again.');
+            }
         }
     };
 
@@ -89,6 +152,30 @@ const BookmarksScreen = ({ navigation }) => {
                 {item.salary && (
                     <Text style={styles.salaryText}>💰 {item.salary}</Text>
                 )}
+
+                <View style={styles.cardFooter}>
+                    {applications.includes(item.job_id) ? (
+                        <View style={styles.appliedTag}>
+                            <Text style={styles.appliedTagText}>Applied ✓</Text>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={styles.applyButton}
+                            activeOpacity={0.7}
+                            onPress={(e) => {
+                                if (e && e.stopPropagation) {
+                                    e.stopPropagation();
+                                }
+                                // Delay to allow button to blur before showing alert
+                                setTimeout(() => {
+                                    handleApply(item.job_id, item.title);
+                                }, 50);
+                            }}
+                        >
+                            <Text style={styles.applyButtonText}>Apply Now</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </TouchableOpacity>
         </View>
     );
@@ -267,6 +354,42 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6b7280',
         textAlign: 'center'
+    },
+    cardFooter: {
+        marginTop: 15,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#f3f4f6',
+        alignItems: 'flex-end'
+    },
+    applyButton: {
+        backgroundColor: '#2563eb',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2
+    },
+    applyButtonText: {
+        color: '#ffffff',
+        fontSize: 13,
+        fontWeight: 'bold'
+    },
+    appliedTag: {
+        backgroundColor: '#ecfdf5',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#10b981'
+    },
+    appliedTagText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#10b981'
     }
 });
 export default BookmarksScreen;

@@ -156,9 +156,14 @@ router.delete('/:id', async (req, res) => {
 
 // Apply to job
 router.post('/:id/apply', async (req, res) => {
+  console.log('📨 Received apply request for job:', req.params.id);
+  console.log('📨 Request body:', req.body);
+
   try {
     const { student_id } = req.body;
     const job_id = req.params.id;
+
+    console.log('🔍 Checking for existing application:', { job_id, student_id });
 
     // Check if already applied
     const [existing] = await db.query(
@@ -166,15 +171,22 @@ router.post('/:id/apply', async (req, res) => {
       [job_id, student_id]
     );
 
+    console.log('🔍 Existing applications found:', existing.length);
+
     if (existing.length > 0) {
+      console.log('⚠️ User already applied to this job');
       return res.status(400).json({ error: 'Already applied to this job' });
     }
 
+    console.log('✅ Creating new application...');
+
     // Create application
-    await db.query(
+    const [result] = await db.query(
       'INSERT INTO applications (job_id, student_id) VALUES (?, ?)',
       [job_id, student_id]
     );
+
+    console.log('✅ Application created with ID:', result.insertId);
 
     // Get job and company info for notification
     const [jobs] = await db.query(`
@@ -185,16 +197,19 @@ router.post('/:id/apply', async (req, res) => {
     `, [student_id, job_id]);
 
     if (jobs.length > 0) {
+      console.log('📧 Creating notification for company:', jobs[0].company_id);
       // Notify company
       await db.query(
         'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
         [jobs[0].company_id, `${jobs[0].student_name} applied to "${jobs[0].title}"`]
       );
+      console.log('✅ Notification created');
     }
 
+    console.log('✅ Application process completed successfully');
     res.status(201).json({ message: 'Application submitted successfully' });
   } catch (error) {
-    console.error('Apply job error:', error);
+    console.error('❌ Apply job error:', error);
     res.status(500).json({ error: 'Failed to apply' });
   }
 });
