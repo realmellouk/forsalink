@@ -7,25 +7,23 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { useUser } from '../utils/UserContext';
 
-
 // Import screens
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-
-
+import JobApplicationsScreen from '../screens/Company/JobApplicationsScreen';
+import EditJobScreen from '../screens/Company/EditJobScreen';
+import CompanyProfileScreen from '../screens/Company/CompanyProfileScreen';
 import StudentHomeScreen from '../screens/student/StudentHomeScreen';
 import JobDetailsScreen from '../screens/student/JobDetailsScreen';
 import StudentProfileScreen from '../screens/student/StudentProfileScreen';
 import BookmarksScreen from '../screens/student/BookmarksScreen';
 import AppliedJobsScreen from '../screens/student/AppliedJobsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
-
+import StudentProfileView from '../screens/student/StudentProfileView'; 
 // Company screens
 import CompanyDashboardScreen from '../screens/Company/CompanyDashboardScreen';
 import AddJobScreen from '../screens/Company/AddJobScreen';
-import EditJobScreen from '../screens/Company/EditJobScreen';
-import CompanyProfileScreen from '../screens/Company/CompanyProfileScreen';
 
 // Common screens
 import SettingsScreen from '../screens/SettingsScreen';
@@ -41,7 +39,6 @@ const SettingsIcon = () => <Text style={{ fontSize: 24 }}>⚙️</Text>;
 const BriefcaseIcon = () => <Text style={{ fontSize: 24 }}>💼</Text>;
 const PlusIcon = () => <Text style={{ fontSize: 24 }}>➕</Text>;
 const BuildingIcon = () => <Text style={{ fontSize: 24 }}>🏢</Text>;
-
 
 // Student Tab Navigator
 const StudentTabs = () => {
@@ -153,13 +150,9 @@ const CompanyTabs = () => {
   );
 };
 
-// Main App Navigator
+// Main App Navigator Component
 const AppNavigator = () => {
-  const { user, loading } = useUser();
-
-  if (loading) {
-    return <SplashScreen />;
-  }
+  const { user } = useUser();
 
   return (
     <NavigationContainer>
@@ -190,6 +183,11 @@ const AppNavigator = () => {
               component={AppliedJobsScreen}
               options={{ headerShown: true, title: 'My Applications' }}
             />
+            <Stack.Screen
+              name="StudentProfileView"
+              component={StudentProfileView}
+              options={{ headerShown: true, title: 'Student Profile' }}
+            />
           </>
         ) : (
           // Company screens
@@ -199,6 +197,16 @@ const AppNavigator = () => {
               name="EditJob"
               component={EditJobScreen}
               options={{ headerShown: true, title: 'Edit Job' }}
+            />
+            <Stack.Screen
+              name="JobApplicationsScreen"
+              component={JobApplicationsScreen}
+              options={{ headerShown: true, title: 'Applications' }}
+            />
+            <Stack.Screen
+              name="StudentProfileView"
+              component={StudentProfileView}
+              options={{ headerShown: true, title: 'Student Profile' }}
             />
           </>
         )}

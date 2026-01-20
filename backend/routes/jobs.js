@@ -24,33 +24,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single job by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const [jobs] = await db.query(`
-      SELECT 
-        jobs.*, 
-        users.full_name as company_name,
-        users.email as company_email,
-        users.company_description,
-        users.company_logo
-      FROM jobs 
-      JOIN users ON jobs.company_id = users.id 
-      WHERE jobs.id = ?
-    `, [req.params.id]);
+// IMPORTANT: Put specific routes BEFORE /:id routes!
 
-    if (jobs.length === 0) {
-      return res.status(404).json({ error: 'Job not found' });
-    }
-
-    res.json(jobs[0]);
-  } catch (error) {
-    console.error('Get job error:', error);
-    res.status(500).json({ error: 'Failed to fetch job' });
-  }
-});
-
-// Get jobs by company
+// Get jobs by company (MOVED UP)
 router.get('/company/:companyId', async (req, res) => {
   try {
     const [jobs] = await db.query(
@@ -62,31 +38,6 @@ router.get('/company/:companyId', async (req, res) => {
   } catch (error) {
     console.error('Get company jobs error:', error);
     res.status(500).json({ error: 'Failed to fetch jobs' });
-  }
-});
-
-// Get applications for a specific job (company only)
-router.get('/:id/applications', async (req, res) => {
-  try {
-    const [applications] = await db.query(`
-      SELECT 
-        applications.*,
-        users.full_name as student_name,
-        users.email as student_email,
-        users.bio as student_bio,
-        users.level_of_study,
-        users.cv_link,
-        users.interests
-      FROM applications
-      JOIN users ON applications.student_id = users.id
-      WHERE applications.job_id = ?
-      ORDER BY applications.applied_at DESC
-    `, [req.params.id]);
-
-    res.json(applications);
-  } catch (error) {
-    console.error('Get job applications error:', error);
-    res.status(500).json({ error: 'Failed to fetch applications' });
   }
 });
 
@@ -117,44 +68,36 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update job
-router.put('/:id', async (req, res) => {
+// Get applications for a specific job (MOVED UP - before /:id)
+router.get('/:jobId/applications', async (req, res) => {
   try {
-    const { title, description, job_type, location, salary, requirements, status, job_deadline } = req.body;
+    const [applications] = await db.query(`
+      SELECT 
+        applications.id,
+        applications.job_id,
+        applications.student_id as user_id,
+        applications.status,
+        applications.applied_at,
+        users.full_name,
+        users.email,
+        users.bio,
+        users.level_of_study,
+        users.cv_link,
+        users.interests
+      FROM applications
+      JOIN users ON applications.student_id = users.id
+      WHERE applications.job_id = ?
+      ORDER BY applications.applied_at DESC
+    `, [req.params.jobId]);
 
-    await db.query(
-      'UPDATE jobs SET title = ?, description = ?, job_type = ?, location = ?, salary = ?, requirements = ?, status = ?, job_deadline = ? WHERE id = ?',
-      [title, description, job_type, location, salary, requirements, status, job_deadline || null, req.params.id]
-    );
-
-    res.json({ message: 'Job updated successfully' });
+    res.json(applications);
   } catch (error) {
-    console.error('Update job error:', error);
-    res.status(500).json({ error: 'Failed to update job' });
+    console.error('Get job applications error:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
   }
 });
 
-// Delete job
-router.delete('/:id', async (req, res) => {
-  const jobId = req.params.id;
-  console.log(`🗑️ Attempting to delete job ID: ${jobId}`);
-  try {
-    const [result] = await db.query('DELETE FROM jobs WHERE id = ?', [jobId]);
-    console.log(`✅ Delete result for job ID ${jobId}:`, result);
-
-    if (result.affectedRows === 0) {
-      console.warn(`⚠️ No job found with ID: ${jobId}`);
-      return res.status(404).json({ error: 'Job not found' });
-    }
-
-    res.json({ message: 'Job deleted successfully' });
-  } catch (error) {
-    console.error(`❌ Error deleting job ID ${jobId}:`, error);
-    res.status(500).json({ error: 'Failed to delete job' });
-  }
-});
-
-// Apply to job
+// Apply to job (MOVED UP - before /:id)
 router.post('/:id/apply', async (req, res) => {
   console.log('📨 Received apply request for job:', req.params.id);
   console.log('📨 Request body:', req.body);
@@ -211,6 +154,112 @@ router.post('/:id/apply', async (req, res) => {
   } catch (error) {
     console.error('❌ Apply job error:', error);
     res.status(500).json({ error: 'Failed to apply' });
+  }
+});
+
+// Update application status (accept/reject)
+router.put('/applications/:applicationId/status', async (req, res) => {
+  try {
+    const { status } = req.body; // 'accepted' or 'rejected'
+    const applicationId = req.params.applicationId;
+
+    await db.query(
+      'UPDATE applications SET status = ? WHERE id = ?',
+      [status, applicationId]
+    );
+
+    // Get application details for notification
+    const [applications] = await db.query(`
+      SELECT 
+        applications.*,
+        jobs.title as job_title,
+        users.id as student_id
+      FROM applications
+      JOIN jobs ON applications.job_id = jobs.id
+      JOIN users ON applications.student_id = users.id
+      WHERE applications.id = ?
+    `, [applicationId]);
+
+    if (applications.length > 0) {
+      const app = applications[0];
+      const message = status === 'accepted'
+        ? `Congratulations! Your application for "${app.job_title}" has been accepted!`
+        : `Your application for "${app.job_title}" was not successful this time.`;
+
+      // Notify student
+      await db.query(
+        'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+        [app.student_id, message]
+      );
+    }
+
+    res.json({ message: 'Application status updated successfully' });
+  } catch (error) {
+    console.error('Update application status error:', error);
+    res.status(500).json({ error: 'Failed to update application status' });
+  }
+});
+
+// Get single job by ID (NOW AT THE END - after specific routes)
+router.get('/:id', async (req, res) => {
+  try {
+    const [jobs] = await db.query(`
+      SELECT 
+        jobs.*, 
+        users.full_name as company_name,
+        users.email as company_email,
+        users.company_description,
+        users.company_logo
+      FROM jobs 
+      JOIN users ON jobs.company_id = users.id 
+      WHERE jobs.id = ?
+    `, [req.params.id]);
+
+    if (jobs.length === 0) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json(jobs[0]);
+  } catch (error) {
+    console.error('Get job error:', error);
+    res.status(500).json({ error: 'Failed to fetch job' });
+  }
+});
+
+// Update job
+router.put('/:id', async (req, res) => {
+  try {
+    const { title, description, job_type, location, salary, requirements, status, job_deadline } = req.body;
+
+    await db.query(
+      'UPDATE jobs SET title = ?, description = ?, job_type = ?, location = ?, salary = ?, requirements = ?, status = ?, job_deadline = ? WHERE id = ?',
+      [title, description, job_type, location, salary, requirements, status, job_deadline || null, req.params.id]
+    );
+
+    res.json({ message: 'Job updated successfully' });
+  } catch (error) {
+    console.error('Update job error:', error);
+    res.status(500).json({ error: 'Failed to update job' });
+  }
+});
+
+// Delete job
+router.delete('/:id', async (req, res) => {
+  const jobId = req.params.id;
+  console.log(`🗑️ Attempting to delete job ID: ${jobId}`);
+  try {
+    const [result] = await db.query('DELETE FROM jobs WHERE id = ?', [jobId]);
+    console.log(`✅ Delete result for job ID ${jobId}:`, result);
+
+    if (result.affectedRows === 0) {
+      console.warn(`⚠️ No job found with ID: ${jobId}`);
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json({ message: 'Job deleted successfully' });
+  } catch (error) {
+    console.error(`❌ Error deleting job ID ${jobId}:`, error);
+    res.status(500).json({ error: 'Failed to delete job' });
   }
 });
 

@@ -114,14 +114,19 @@ const CompanyDashboardScreen = ({ navigation }) => {
         <Text style={styles.date}>
           Posted {new Date(item.created_at).toLocaleDateString()}
         </Text>
-        <Text style={styles.date}>
-          Deadline {new Date(item.job_deadline).toLocaleDateString()}
-        </Text>
-        
         <View style={styles.actions}>
           <TouchableOpacity
+            style={styles.applicationsButton}
+            onPress={() => navigation.navigate('JobApplicationsScreen', {
+              jobId: item.id,
+              jobTitle: item.title
+            })}
+          >
+            <Text style={styles.applicationsButtonText}>📋 Applications</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.editButton}
-            onPress={() => navigation.navigate('EditJob', { job: item })}
+            onPress={() => navigation.navigate('EditJobScreen', { job: item })}
           >
             <Text style={styles.editButtonText}>✏️ Edit</Text>
           </TouchableOpacity>
@@ -158,7 +163,7 @@ const CompanyDashboardScreen = ({ navigation }) => {
           <Text style={styles.emptySubtext}>Create your first job posting!</Text>
           <TouchableOpacity
             style={styles.createFirstButton}
-            onPress={() => navigation.navigate('AddJob')}
+            onPress={() => navigation.navigate('AddJobScreen')}
           >
             <Text style={styles.createFirstButtonText}>+ Create Job</Text>
           </TouchableOpacity>
@@ -312,6 +317,18 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 16
+  },
+  applicationsButton: {
+    backgroundColor: '#f3e8ff',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginRight: 8
+  },
+  applicationsButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b21a8'
   },
   emptyState: {
     flex: 1,

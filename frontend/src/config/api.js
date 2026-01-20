@@ -1,5 +1,5 @@
 // API Configuration
-export const API_URL = 'http://192.168.11.123:3000/api'; // Change to YOUR IP!
+export const API_URL = 'http://192.168.11.131:3000/api'; // Change to YOUR IP!
 
 // Custom error class
 class APIError extends Error {
@@ -246,7 +246,7 @@ export const api = {
     }
   },
 
-  getJobApplications: async (jobId) => {
+  getJobApplicationsScreen: async (jobId) => {
     try {
       const response = await fetch(`${API_URL}/jobs/${jobId}/applications`);
       if (!response.ok) throw new Error('Failed to load applications');
@@ -257,19 +257,19 @@ export const api = {
   },
 
   updateApplicationStatus: async (applicationId, status) => {
-    try {
-      const response = await fetch(`${API_URL}/applications/${applicationId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (!response.ok) throw new Error('Failed to update status');
-      return response.json();
-    } catch (error) {
-      throw new APIError(error.message, 'network');
-    }
-  },
-
+  try {
+    const response = await fetch(`${API_URL}/jobs/applications/${applicationId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) throw new APIError('Failed to update application.', 'server');
+    return response.json();
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    throw new APIError('Cannot connect to server.', 'network');
+  }
+},
   // Users
   getUser: async (id) => {
     try {
@@ -388,3 +388,17 @@ export const api = {
     }
   }
 };
+// Add these to the api object:
+
+// Get applications for a job
+getJobApplicationsScreen: async (jobId) => {
+  try {
+    const response = await fetch(`${API_URL}/jobs/${jobId}/applications`);
+    if (!response.ok) throw new APIError('Failed to load applications.', 'server');
+    return response.json();
+  } catch (error) {
+    if (error instanceof APIError) throw error;
+    throw new APIError('Cannot connect to server.', 'network');
+  }
+};
+
