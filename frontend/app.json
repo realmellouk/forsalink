@@ -1,0 +1,38 @@
+{
+    "expo": {
+        "name": "Forsalink",
+        "slug": "forsalink-mobile",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.forsalink.mobile"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.forsalink.mobile"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "sdkVersion": "54.0.0",
+        "platforms": [
+            "ios",
+            "android",
+            "web"
+        ]
+    }
+}

@@ -7,7 +7,7 @@ const db = require('../config/db');
 router.get('/:id', async (req, res) => {
   try {
     const [users] = await db.query(
-      'SELECT id, full_name, email, role, bio, level_of_study, cv_link, interests, company_description, company_logo, created_at FROM users WHERE id = ?',
+      'SELECT id, full_name, email, role, bio, level_of_study, cv_link, interests, company_description, company_logo, profile_picture, created_at FROM users WHERE id = ?',
       [req.params.id]
     );
 
@@ -25,11 +25,11 @@ router.get('/:id', async (req, res) => {
 // Update user profile
 router.put('/:id', async (req, res) => {
   try {
-    const { full_name, bio, level_of_study, cv_link, interests, company_description } = req.body;
+    const { full_name, bio, level_of_study, cv_link, interests, company_description, profile_picture, company_logo } = req.body;
 
     await db.query(
-      'UPDATE users SET full_name = ?, bio = ?, level_of_study = ?, cv_link = ?, interests = ?, company_description = ? WHERE id = ?',
-      [full_name, bio, level_of_study, cv_link, interests, company_description, req.params.id]
+      'UPDATE users SET full_name = ?, bio = ?, level_of_study = ?, cv_link = ?, interests = ?, company_description = ?, profile_picture = ?, company_logo = ? WHERE id = ?',
+      [full_name, bio, level_of_study, cv_link, interests, company_description, profile_picture, company_logo, req.params.id]
     );
 
     res.json({ message: 'Profile updated successfully' });

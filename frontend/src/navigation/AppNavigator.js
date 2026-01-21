@@ -20,7 +20,7 @@ import StudentProfileScreen from '../screens/student/StudentProfileScreen';
 import BookmarksScreen from '../screens/student/BookmarksScreen';
 import AppliedJobsScreen from '../screens/student/AppliedJobsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
-import StudentProfileView from '../screens/student/StudentProfileView'; 
+import StudentProfileView from '../screens/student/StudentProfileView';
 // Company screens
 import CompanyDashboardScreen from '../screens/Company/CompanyDashboardScreen';
 import AddJobScreen from '../screens/Company/AddJobScreen';
@@ -146,6 +146,14 @@ const CompanyTabs = () => {
           tabBarIcon: BuildingIcon
         }}
       />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: 'Settings',
+          tabBarIcon: SettingsIcon
+        }}
+      />
     </Tab.Navigator>
   );
 };
@@ -203,6 +211,7 @@ const AppNavigator = () => {
               component={JobApplicationsScreen}
               options={{ headerShown: true, title: 'Applications' }}
             />
+            
             <Stack.Screen
               name="StudentProfileView"
               component={StudentProfileView}

@@ -257,19 +257,19 @@ export const api = {
   },
 
   updateApplicationStatus: async (applicationId, status) => {
-  try {
-    const response = await fetch(`${API_URL}/jobs/applications/${applicationId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    if (!response.ok) throw new APIError('Failed to update application.', 'server');
-    return response.json();
-  } catch (error) {
-    if (error instanceof APIError) throw error;
-    throw new APIError('Cannot connect to server.', 'network');
-  }
-},
+    try {
+      const response = await fetch(`${API_URL}/jobs/applications/${applicationId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) throw new APIError('Failed to update application.', 'server');
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server.', 'network');
+    }
+  },
   // Users
   getUser: async (id) => {
     try {
@@ -379,6 +379,29 @@ export const api = {
 
       if (!response.ok) {
         throw new APIError('Failed to mark all as read.', 'server');
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  changePassword: async (userId, oldPassword, newPassword) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/change-password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, oldPassword, newPassword })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 401) {
+          throw new APIError(data.error || 'Current password is incorrect', 'permission');
+        }
+        throw new APIError(data.error || 'Failed to change password.', 'server');
       }
 
       return response.json();

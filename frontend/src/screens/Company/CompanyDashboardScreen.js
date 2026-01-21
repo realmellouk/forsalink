@@ -9,10 +9,13 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
-  Platform
+  Platform,
+  Dimensions
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
+
+const { width } = Dimensions.get('window');
 
 const CompanyDashboardScreen = ({ navigation }) => {
   const { user } = useUser();
@@ -33,6 +36,12 @@ const CompanyDashboardScreen = ({ navigation }) => {
   }, [navigation]);
 
   const loadJobs = async () => {
+    // Safety check: don't load data if user is null (during logout)
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = await api.getCompanyJobs(user.id);
       setJobs(data);
@@ -88,17 +97,15 @@ const CompanyDashboardScreen = ({ navigation }) => {
   const renderJobCard = ({ item }) => (
     <View style={styles.jobCard}>
       <View style={styles.jobHeader}>
-        <View style={styles.jobInfo}>
-          <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
-          <View style={styles.jobMeta}>
-            <View style={[styles.statusBadge,
-            item.status === 'active' ? styles.statusActive : styles.statusClosed]}>
-              <Text style={styles.statusText}>
-                {item.status === 'active' ? '🟢 Active' : '🔴 Closed'}
-              </Text>
-            </View>
-            <Text style={styles.jobType}>{item.job_type}</Text>
+        <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
+        <View style={styles.jobMeta}>
+          <View style={[styles.statusBadge,
+          item.status === 'active' ? styles.statusActive : styles.statusClosed]}>
+            <Text style={styles.statusText}>
+              {item.status === 'active' ? '🟢 Active' : '🔴 Closed'}
+            </Text>
           </View>
+          <Text style={styles.jobType}>{item.job_type}</Text>
         </View>
       </View>
 
@@ -106,37 +113,39 @@ const CompanyDashboardScreen = ({ navigation }) => {
         <Text style={styles.location}>📍 {item.location}</Text>
       )}
 
-      <Text style={styles.description} numberOfLines={2}>
+      <Text style={styles.description} numberOfLines={3}>
         {item.description}
       </Text>
 
       <View style={styles.footer}>
         <Text style={styles.date}>
-          Posted {new Date(item.created_at).toLocaleDateString()}
+          {new Date(item.created_at).toLocaleDateString()}
         </Text>
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.applicationsButton}
-            onPress={() => navigation.navigate('JobApplicationsScreen', {
-              jobId: item.id,
-              jobTitle: item.title
-            })}
-          >
-            <Text style={styles.applicationsButtonText}>📋 Applications</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => navigation.navigate('EditJobScreen', { job: item })}
-          >
-            <Text style={styles.editButtonText}>✏️ Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDelete(item.id, item.title)}
-          >
-            <Text style={styles.deleteButtonText}>🗑️</Text>
-          </TouchableOpacity>
-        </View>
+      </View>
+
+      {/* Action Buttons - Stacked for better mobile layout */}
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={styles.applicationsButton}
+          onPress={() => navigation.navigate('JobApplicationsScreen', {
+            jobId: item.id,
+            jobTitle: item.title
+          })}
+        >
+          <Text style={styles.applicationsButtonText}>📋 Applications</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => navigation.navigate('EditJobScreen', { job: item })}
+        >
+          <Text style={styles.editButtonText}>✏️ Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDelete(item.id, item.title)}
+        >
+          <Text style={styles.deleteButtonText}>🗑️ Delete</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -152,8 +161,8 @@ const CompanyDashboardScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.welcomeHeader}>
-        <Text style={styles.welcomeText}>Welcome, {user.full_name}! 🏢</Text>
-        <Text style={styles.welcomeSubtext}>Manage your job postings</Text>
+        <Text style={styles.welcomeText}>Welcome! 🏢</Text>
+        <Text style={styles.welcomeSubtext}>{user?.full_name || 'Guest'}</Text>
       </View>
 
       {jobs.length === 0 ? (
@@ -200,61 +209,59 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb'
   },
   welcomeHeader: {
-    padding: 20,
-    paddingTop: 10,
+    padding: 16,
+    paddingTop: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 5
+    marginBottom: 2
   },
   welcomeSubtext: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280'
   },
   listContent: {
-    padding: 15,
-    paddingBottom: 30
+    padding: 12,
+    paddingBottom: 20
   },
   jobCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 3,
+    elevation: 2,
     borderWidth: 1,
     borderColor: '#f3f4f6'
   },
   jobHeader: {
-    marginBottom: 12
-  },
-  jobInfo: {
-    flex: 1
+    marginBottom: 10
   },
   jobTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 8
+    marginBottom: 8,
+    lineHeight: 22
   },
   jobMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    gap: 8
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    marginRight: 10
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10
   },
   statusActive: {
     backgroundColor: '#d1fae5'
@@ -263,108 +270,112 @@ const styles = StyleSheet.create({
     backgroundColor: '#fee2e2'
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600'
   },
   jobType: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280',
     textTransform: 'capitalize'
   },
   location: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280',
-    marginBottom: 10
+    marginBottom: 8
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#4b5563',
-    lineHeight: 20,
-    marginBottom: 15
+    lineHeight: 18,
+    marginBottom: 12
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 15,
+    paddingTop: 10,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6'
   },
   date: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#9ca3af'
   },
   actions: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8
+  },
+  applicationsButton: {
+    flex: 1,
+    backgroundColor: '#f3e8ff',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  applicationsButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b21a8'
   },
   editButton: {
+    flex: 1,
     backgroundColor: '#dbeafe',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 8,
-    marginRight: 8
+    alignItems: 'center'
   },
   editButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#1e40af'
   },
   deleteButton: {
     backgroundColor: '#fee2e2',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   deleteButtonText: {
-    fontSize: 16
-  },
-  applicationsButton: {
-    backgroundColor: '#f3e8ff',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginRight: 8
-  },
-  applicationsButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#6b21a8'
+    color: '#dc2626'
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40
+    padding: 30
   },
   emptyIcon: {
-    fontSize: 80,
-    marginBottom: 20
+    fontSize: 60,
+    marginBottom: 16
   },
   emptyText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 10
+    marginBottom: 8
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280',
     marginBottom: 20
   },
   createFirstButton: {
     backgroundColor: '#2563eb',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: 10,
     shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5
+    shadowRadius: 4,
+    elevation: 3
   },
   createFirstButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold'
   }
 });

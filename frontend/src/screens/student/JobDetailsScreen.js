@@ -9,10 +9,12 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  SafeAreaView
+  Dimensions
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
+
+const { width } = Dimensions.get('window');
 
 const JobDetailsScreen = ({ route, navigation }) => {
   const { jobId } = route.params;
@@ -21,7 +23,6 @@ const JobDetailsScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
-
 
   useEffect(() => {
     loadJobDetails();
@@ -44,6 +45,11 @@ const JobDetailsScreen = ({ route, navigation }) => {
   };
 
   const handleApply = async () => {
+    if (hasApplied) {
+      Alert.alert('Already Applied', 'You have already applied to this job.');
+      return;
+    }
+
     Alert.alert(
       'Apply to this job?',
       'Your application will be sent to the company.',
@@ -59,6 +65,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
               if (response.error) {
                 Alert.alert('Error', response.error);
               } else {
+                setHasApplied(true);
                 Alert.alert(
                   'Success!',
                   'Your application has been submitted.',
@@ -106,7 +113,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
               {job.company_name.charAt(0)}
             </Text>
           </View>
-          <Text style={styles.jobTitle}>{job.title}</Text>
+          <Text style={styles.jobTitle} numberOfLines={3}>{job.title}</Text>
           <Text style={styles.companyName}>{job.company_name}</Text>
 
           <View style={styles.tags}>
@@ -120,7 +127,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
             )}
           </View>
 
-          {/* New Inline Apply Button */}
+          {/* Apply Button */}
           <TouchableOpacity
             style={[styles.headerApplyButton, hasApplied && styles.appliedButton]}
             onPress={handleApply}
@@ -130,7 +137,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
               <ActivityIndicator color="#ffffff" size="small" />
             ) : (
               <Text style={styles.headerApplyButtonText}>
-                {hasApplied ? 'Status: Applied ✓' : 'Apply Now '}
+                {hasApplied ? 'Applied ✓' : 'Apply Now'}
               </Text>
             )}
           </TouchableOpacity>
@@ -169,23 +176,30 @@ const JobDetailsScreen = ({ route, navigation }) => {
 
         {/* Posted Date */}
         <View style={styles.dateSection}>
-          <Text style={styles.dateText}>
-            Posted on {new Date(job.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Text>
-          <Text style={styles.dateText}>
-            Deadline {new Date(job.job_deadline).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Text>
+          <View style={styles.dateItem}>
+            <Text style={styles.dateLabel}>Posted</Text>
+            <Text style={styles.dateValue}>
+              {new Date(job.created_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </Text>
+          </View>
+          <View style={styles.dateDivider} />
+          <View style={styles.dateItem}>
+            <Text style={styles.dateLabel}>Deadline</Text>
+            <Text style={styles.dateValue}>
+              {new Date(job.job_deadline).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </Text>
+          </View>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
@@ -210,65 +224,68 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#ffffff',
-    padding: 20,
+    padding: 16,
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
   },
   companyLogo: {
-    width: 70,
-    height: 70,
-    borderRadius: 15,
+    width: 60,
+    height: 60,
+    borderRadius: 12,
     backgroundColor: '#2563eb',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#2563eb',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 5,
+        elevation: 3,
       },
       web: {
-        boxShadow: '0 4px 8px rgba(37,99,235,0.3)',
+        boxShadow: '0 2px 4px rgba(37,99,235,0.3)',
       }
     })
   },
   companyLogoText: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#ffffff'
   },
   jobTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
     textAlign: 'center',
-    marginBottom: 8
+    marginBottom: 6,
+    lineHeight: 26,
+    paddingHorizontal: 10
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#6b7280',
-    marginBottom: 15
+    marginBottom: 12
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    gap: 8
   },
   tag: {
     backgroundColor: '#dbeafe',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    margin: 5
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginHorizontal: 4
   },
   tagText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#1e40af',
     textTransform: 'capitalize'
@@ -277,79 +294,97 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6'
   },
   tagTextSecondary: {
-    color: '#4b5563'
+    color: '#4b5563',
+    fontSize: 12
   },
   section: {
     backgroundColor: '#ffffff',
-    padding: 20,
-    marginTop: 10
+    padding: 16,
+    marginTop: 8
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 12
+    marginBottom: 10
   },
   salary: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#059669'
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#4b5563',
-    lineHeight: 24
+    lineHeight: 22
   },
   contactEmail: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#2563eb',
-    marginTop: 10
+    marginTop: 8
   },
   dateSection: {
-    padding: 20,
-    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    marginTop: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between'
-
+    alignItems: 'center',
+    justifyContent: 'space-around'
   },
-  dateText: {
+  dateItem: {
+    flex: 1,
+    alignItems: 'center'
+  },
+  dateLabel: {
+    fontSize: 11,
+    color: '#9ca3af',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    marginBottom: 4
+  },
+  dateValue: {
     fontSize: 13,
-    color: '#9ca3af'
+    color: '#1f2937',
+    fontWeight: '500'
+  },
+  dateDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#e5e7eb'
   },
   headerApplyButton: {
     backgroundColor: '#2563eb',
-    borderRadius: 12,
-    paddingHorizontal: 30,
-    paddingVertical: 14,
-    marginTop: 20,
-    width: '80%',
+    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginTop: 16,
+    width: '90%',
     alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#2563eb',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
-        shadowRadius: 6,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
       web: {
-        boxShadow: '0 4px 8px rgba(37,99,235,0.3)',
+        boxShadow: '0 2px 4px rgba(37,99,235,0.3)',
       }
     })
   },
   headerApplyButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold'
   },
   appliedButton: {
-    backgroundColor: '#10b981',
-    opacity: 0.9
+    backgroundColor: '#10b981'
   },
   errorText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6b7280'
   }
 });

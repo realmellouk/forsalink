@@ -10,12 +10,15 @@ import {
   TextInput,
   Alert,
   Image,
-  Platform
+  Platform,
+  Dimensions
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import { api } from '../../config/api';
 import ErrorMessage from '../../components/ErrorMessage';
 import JobFilters from '../../components/JobFilters';
+
+const { width } = Dimensions.get('window');
 
 const StudentHomeScreen = ({ navigation }) => {
   const { user } = useUser();
@@ -42,6 +45,12 @@ const StudentHomeScreen = ({ navigation }) => {
   }, [jobs, filters, searchQuery, bookmarks]);
 
   const loadData = async () => {
+    // Safety check: don't load data if user is null (during logout)
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       const [jobsData, bookmarksData, appsData] = await Promise.all([
@@ -217,13 +226,7 @@ const StudentHomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.jobInfo}>
               <Text style={styles.jobTitle} numberOfLines={2}>{item.title}</Text>
-              <View style={styles.companyRow}>
-                <Text style={styles.companyName}>{item.company_name}</Text>
-                {applications.includes(item.id) && (
-                  <View style={styles.appliedBadge}>
-                  </View>
-                )}
-              </View>
+              <Text style={styles.companyName} numberOfLines={1}>{item.company_name}</Text>
             </View>
             <TouchableOpacity
               style={styles.bookmarkButton}
@@ -240,16 +243,12 @@ const StudentHomeScreen = ({ navigation }) => {
               <Text style={styles.tagText}>{item.job_type}</Text>
             </View>
             {item.location && (
-              <View style={styles.locationContainer}>
-                <Text style={styles.locationText}>📍 {item.location}</Text>
-              </View>
+              <Text style={styles.locationText}>📍 {item.location}</Text>
             )}
           </View>
 
           {item.salary && (
-            <View style={styles.salaryContainer}>
-              <Text style={styles.salaryText}>💰 {item.salary}</Text>
-            </View>
+            <Text style={styles.salaryText}>💰 {item.salary}</Text>
           )}
 
           <Text style={styles.description} numberOfLines={2}>
@@ -258,7 +257,7 @@ const StudentHomeScreen = ({ navigation }) => {
 
           <View style={styles.footer}>
             <Text style={styles.date}>
-              Posted {new Date(item.created_at).toLocaleDateString()}
+              {new Date(item.created_at).toLocaleDateString()}
             </Text>
             {applications.includes(item.id) ? (
               <View style={styles.appliedTag}>
@@ -272,13 +271,12 @@ const StudentHomeScreen = ({ navigation }) => {
                   if (e && e.stopPropagation) {
                     e.stopPropagation();
                   }
-                  // Delay to allow button to blur before showing alert
                   setTimeout(() => {
                     handleApply(item.id, item.title);
                   }, 50);
                 }}
               >
-                <Text style={styles.applyButtonText}>Apply Now</Text>
+                <Text style={styles.applyButtonText}>Apply</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -309,18 +307,8 @@ const StudentHomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.welcomeHeader}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.welcomeText}>Welcome, {user.full_name}! 👋</Text>
-            <Text style={styles.welcomeSubtext}>Find your next opportunity</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.headerIcon}
-            onPress={() => navigation.navigate('AppliedJobs')}
-          >
-            <Text style={styles.headerIconEmoji}>💼</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.welcomeText}>Welcome! 👋</Text>
+        <Text style={styles.welcomeSubtext}>{user?.full_name || 'Guest'}</Text>
       </View>
 
       {/* Search Bar */}
@@ -329,7 +317,7 @@ const StudentHomeScreen = ({ navigation }) => {
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search jobs, companies, locations..."
+            placeholder="Search jobs..."
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -361,22 +349,19 @@ const StudentHomeScreen = ({ navigation }) => {
       {/* Results Count */}
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsText}>
-          {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} found
+          {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'}
         </Text>
       </View>
 
       {/* Job List */}
       {filteredJobs.length === 0 ? (
         <View style={styles.emptyState}>
-          <Image
-            source={require('../../../assets/empty-jobs.png')}
-            style={styles.emptyImage}
-          />
+          <Text style={styles.emptyIcon}>📭</Text>
           <Text style={styles.emptyText}>No jobs found</Text>
           <Text style={styles.emptySubtext}>
             {searchQuery || filters.jobType !== 'all'
               ? 'Try adjusting your filters'
-              : 'Check back soon for new opportunities!'}
+              : 'Check back soon!'}
           </Text>
         </View>
       ) : (
@@ -412,30 +397,29 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280'
   },
   welcomeHeader: {
-    padding: 20,
-    paddingTop: 10,
-    paddingBottom: 15,
+    padding: 16,
+    paddingTop: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 5
+    marginBottom: 2
   },
   welcomeSubtext: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280'
   },
   searchContainer: {
     flexDirection: 'row',
-    padding: 15,
+    padding: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb'
@@ -446,27 +430,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f3f4f6',
     borderRadius: 10,
-    paddingHorizontal: 15,
-    marginRight: 10
+    paddingHorizontal: 12,
+    marginRight: 8
   },
   searchIcon: {
-    fontSize: 18,
-    marginRight: 10
+    fontSize: 16,
+    marginRight: 8
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: '#1f2937',
-    paddingVertical: 12
+    paddingVertical: 10
   },
   clearIcon: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#9ca3af',
-    paddingLeft: 10
+    paddingLeft: 8
   },
   filterButton: {
-    width: 45,
-    height: 45,
+    width: 42,
+    height: 42,
     backgroundColor: '#f3f4f6',
     borderRadius: 10,
     justifyContent: 'center',
@@ -476,237 +460,191 @@ const styles = StyleSheet.create({
     backgroundColor: '#dbeafe'
   },
   filterButtonText: {
-    fontSize: 20
+    fontSize: 18
   },
   resultsHeader: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     backgroundColor: '#ffffff'
   },
   resultsText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280',
     fontWeight: '600'
   },
   listContent: {
-    padding: 15,
-    paddingBottom: 30
+    padding: 12,
+    paddingBottom: 20
   },
   jobCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 15,
-    marginBottom: 15,
+    borderRadius: 12,
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       }
     }),
     borderWidth: 1,
     borderColor: '#f3f4f6'
   },
   jobCardContent: {
-    padding: 20
+    padding: 14
   },
   jobHeader: {
     flexDirection: 'row',
-    marginBottom: 15
+    marginBottom: 12
   },
   companyLogo: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     backgroundColor: '#2563eb',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15
+    marginRight: 12
   },
   companyLogoText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#ffffff'
   },
   jobInfo: {
     flex: 1,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    marginRight: 8
   },
   jobTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 4
+    marginBottom: 3,
+    lineHeight: 20
   },
   companyName: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#6b7280'
   },
-  companyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap'
-  },
-  appliedBadge: {
-    backgroundColor: '#ecfdf5',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: '#10b981'
-  },
-  appliedBadgeText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#10b981'
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  headerIcon: {
-    width: 45,
-    height: 45,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  headerIconEmoji: {
-    fontSize: 22
-  },
   bookmarkButton: {
-    padding: 5
+    padding: 4
   },
   bookmarkIcon: {
-    fontSize: 24
+    fontSize: 20
   },
   jobDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    flexWrap: 'wrap'
+    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: 8
   },
   tag: {
     backgroundColor: '#dbeafe',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-    marginRight: 10
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
   },
   tagText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#1e40af',
     textTransform: 'capitalize'
   },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
   locationText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280'
   },
-  salaryContainer: {
-    marginBottom: 12
-  },
   salaryText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#059669'
+    color: '#059669',
+    marginBottom: 10
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#4b5563',
-    lineHeight: 20,
-    marginBottom: 15
+    lineHeight: 18,
+    marginBottom: 12
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 15,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6'
   },
   date: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#9ca3af'
-  },
-  viewDetails: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2563eb'
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20
-  },
-  emptyImage: {
-    width: 200,
-    height: 150,
-    resizeMode: 'contain',
-    marginBottom: 20
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 10
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center'
   },
   applyButton: {
     backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#2563eb',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowRadius: 2,
       },
       android: {
         elevation: 2,
       },
       web: {
-        boxShadow: '0 2px 4px rgba(37,99,235,0.3)',
+        boxShadow: '0 1px 2px rgba(37,99,235,0.3)',
       }
     })
   },
   applyButtonText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 'bold'
   },
   appliedTag: {
     backgroundColor: '#ecfdf5',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#10b981'
   },
   appliedTagText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#10b981'
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30
+  },
+  emptyIcon: {
+    fontSize: 60,
+    marginBottom: 16
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8
+  },
+  emptySubtext: {
+    fontSize: 13,
+    color: '#6b7280',
+    textAlign: 'center'
   }
 });
 
