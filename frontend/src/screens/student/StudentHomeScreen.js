@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 12,
-    paddingBottom: 20
+    paddingBottom: 85
   },
   jobCard: {
     backgroundColor: '#ffffff',

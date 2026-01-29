@@ -156,7 +156,9 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder={role === 'student' ? 'e.g. Ahmed El Amrani' : 'e.g. TechCorp Morocco'}
+                placeholderTextColor="#666"
                 value={fullName}
+                color="black"
                 onChangeText={setFullName}
                 autoComplete="off"
                 textContentType="none"
@@ -168,7 +170,9 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="example@email.com"
+                placeholderTextColor="#666"
                 value={email}
+                color="black"
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -183,7 +187,9 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="At least 6 characters"
+                placeholderTextColor="#666"
                 value={password}
+                color="black"
                 onChangeText={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
@@ -197,7 +203,9 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="Re-enter password"
+                placeholderTextColor="#666"
                 value={confirmPassword}
+                color="black"
                 onChangeText={setConfirmPassword}
                 secureTextEntry
                 autoCapitalize="none"
@@ -215,7 +223,9 @@ const RegisterScreen = ({ navigation }) => {
                 placeholder={role === 'student'
                   ? 'Tell us about yourself...'
                   : 'Describe your company...'}
+                placeholderTextColor="#666"
                 value={bio}
+                color="black"
                 onChangeText={setBio}
                 multiline
                 numberOfLines={4}

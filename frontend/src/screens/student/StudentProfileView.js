@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   Linking,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { api } from '../../config/api';
 
@@ -24,7 +24,7 @@ const StudentProfileView = ({ route, navigation }) => {
 
   const loadStudentProfile = async () => {
     try {
-      const data = await api.getUserProfile(studentId);
+      const data = await api.getUser(studentId);
       setStudent(data);
     } catch (error) {
       console.error('Load student profile error:', error);

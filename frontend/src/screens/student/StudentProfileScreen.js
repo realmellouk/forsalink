@@ -172,6 +172,13 @@ const StudentProfileScreen = ({ navigation }) => {
             >
               <Text style={styles.bookmarksButtonText}>💼 My Applications</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.bookmarksButton, { backgroundColor: '#8b5cf6', borderColor: '#8b5cf6' }]}
+              onPress={() => navigation.navigate('Conversations')}
+            >
+              <Text style={[styles.bookmarksButtonText, { color: '#ffffff' }]}>💬 Messages</Text>
+            </TouchableOpacity>
           </>
         ) : (
           <View style={styles.editActions}>

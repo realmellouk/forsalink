@@ -11,8 +11,10 @@ import {
   Platform
 } from 'react-native';
 import { api } from '../../config/api';
+import { useUser } from '../../utils/UserContext';
 
 const JobApplicationsScreen = ({ route, navigation }) => {
+  const { user } = useUser();
   const { jobId, jobTitle } = route.params;
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,6 @@ const JobApplicationsScreen = ({ route, navigation }) => {
     loadApplications();
   }, []);
 
-  // Reload when screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadApplications();
@@ -55,14 +56,14 @@ const JobApplicationsScreen = ({ route, navigation }) => {
     const updateStatus = async () => {
       try {
         await api.updateApplicationStatus(applicationId, status);
-        
+
         if (Platform.OS === 'web') {
           window.alert(`Application ${status}!`);
         } else {
           Alert.alert('Success', `Application ${status}!`);
         }
-        
-        loadApplications(); // Reload to show updated status
+
+        loadApplications();
       } catch (error) {
         if (Platform.OS === 'web') {
           window.alert('Failed to update application status');
@@ -103,7 +104,6 @@ const JobApplicationsScreen = ({ route, navigation }) => {
     });
   };
 
-  // Navigate to student profile view
   const viewStudentProfile = (student) => {
     navigation.navigate('StudentProfileView', {
       studentId: student.user_id || student.id,
@@ -113,7 +113,7 @@ const JobApplicationsScreen = ({ route, navigation }) => {
 
   const renderApplication = ({ item }) => (
     <View style={styles.applicationCard}>
-      {/* Student Info - Make it clickable */}
+      {/* Student Info - Clickable */}
       <TouchableOpacity
         style={styles.studentHeader}
         onPress={() => viewStudentProfile(item)}
@@ -129,19 +129,21 @@ const JobApplicationsScreen = ({ route, navigation }) => {
           <Text style={styles.studentEmail}>{item.email || 'No email'}</Text>
           <Text style={styles.viewProfileHint}>Tap to view full profile →</Text>
         </View>
-        <View style={[
-          styles.statusBadge,
-          item.status === 'accepted' && styles.statusAccepted,
-          item.status === 'rejected' && styles.statusRejected,
-          item.status === 'pending' && styles.statusPending
-        ]}>
-          <Text style={styles.statusText}>
-            {item.status === 'accepted' ? '✅ Accepted' :
-              item.status === 'rejected' ? '❌ Rejected' :
-                '⏳ Pending'}
-          </Text>
-        </View>
       </TouchableOpacity>
+
+      {/* Status Badge */}
+      <View style={[
+        styles.statusBadge,
+        item.status === 'accepted' && styles.statusAccepted,
+        item.status === 'rejected' && styles.statusRejected,
+        item.status === 'pending' && styles.statusPending
+      ]}>
+        <Text style={styles.statusText}>
+          {item.status === 'accepted' ? '✅ Accepted' :
+            item.status === 'rejected' ? '❌ Rejected' :
+              '⏳ Pending'}
+        </Text>
+      </View>
 
       {/* Student Details */}
       {item.level_of_study && (
@@ -154,7 +156,7 @@ const JobApplicationsScreen = ({ route, navigation }) => {
       {item.bio && (
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>💡 Bio:</Text>
-          <Text style={styles.detailValue} numberOfLines={2}>
+          <Text style={styles.detailValue} numberOfLines={3}>
             {item.bio}
           </Text>
         </View>
@@ -163,7 +165,7 @@ const JobApplicationsScreen = ({ route, navigation }) => {
       {item.interests && (
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>🎯 Interests:</Text>
-          <Text style={styles.detailValue} numberOfLines={2}>
+          <Text style={styles.detailValue} numberOfLines={3}>
             {item.interests}
           </Text>
         </View>
@@ -198,6 +200,32 @@ const JobApplicationsScreen = ({ route, navigation }) => {
             <Text style={styles.acceptButtonText}>✅ Accept</Text>
           </TouchableOpacity>
         </View>
+      )}
+
+      {/* Chat Button for Accepted Applications */}
+      {item.status === 'accepted' && (
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={async () => {
+            try {
+              const response = await api.createConversation(
+                item.user_id,
+                user.id,
+                jobId
+              );
+              navigation.navigate('Chat', {
+                conversationId: response.conversationId,
+                otherPartyName: item.full_name,
+                jobTitle: jobTitle
+              });
+            } catch (error) {
+              console.error('Create conversation error:', error);
+              Alert.alert('Error', error.message || 'Could not start conversation');
+            }
+          }}
+        >
+          <Text style={styles.chatButtonText}>💬 Message Student</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -243,19 +271,54 @@ const JobApplicationsScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9fafb' },
-  loadingText: { marginTop: 10, fontSize: 14, color: '#6b7280' },
-  header: { backgroundColor: '#fff', padding: 20, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-  headerTitle: { fontSize: 14, color: '#6b7280', marginBottom: 5 },
-  jobTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginBottom: 10, lineHeight: 26 },
-  count: { fontSize: 13, color: '#2563eb', fontWeight: '600' },
-  listContent: { padding: 15, paddingBottom: 30 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#f9fafb' 
+  },
+  centerContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#f9fafb' 
+  },
+  loadingText: { 
+    marginTop: 12, 
+    fontSize: 16, 
+    color: '#6b7280' 
+  },
+  header: { 
+    backgroundColor: '#fff', 
+    padding: 20, 
+    paddingBottom: 18,
+    borderBottomWidth: 1, 
+    borderBottomColor: '#e5e7eb' 
+  },
+  headerTitle: { 
+    fontSize: 14, 
+    color: '#6b7280', 
+    marginBottom: 6 
+  },
+  jobTitle: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: '#1f2937', 
+    marginBottom: 10, 
+    lineHeight: 28 
+  },
+  count: { 
+    fontSize: 14, 
+    color: '#2563eb', 
+    fontWeight: '600' 
+  },
+  listContent: { 
+    padding: 16, 
+    paddingBottom: 30 
+  },
   applicationCard: {
     backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -271,59 +334,159 @@ const styles = StyleSheet.create({
       }
     })
   },
-  studentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  studentHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 12 
+  },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#2563eb',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15
+    marginRight: 12
   },
-  avatarText: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  studentInfo: { flex: 1 },
-  studentName: { fontSize: 18, fontWeight: 'bold', color: '#1f2937', marginBottom: 3 },
-  studentEmail: { fontSize: 14, color: '#6b7280' },
-  viewProfileHint: { fontSize: 12, color: '#2563eb', marginTop: 4, fontStyle: 'italic' },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 },
-  statusPending: { backgroundColor: '#fef3c7' },
-  statusAccepted: { backgroundColor: '#d1fae5' },
-  statusRejected: { backgroundColor: '#fee2e2' },
-  statusText: { fontSize: 12, fontWeight: '600' },
-  detailRow: { marginBottom: 10 },
-  detailLabel: { fontSize: 13, fontWeight: '600', color: '#6b7280', marginBottom: 3 },
-  detailValue: { fontSize: 14, color: '#1f2937', lineHeight: 20 },
+  avatarText: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+  studentInfo: { 
+    flex: 1 
+  },
+  studentName: { 
+    fontSize: 17, 
+    fontWeight: 'bold', 
+    color: '#1f2937', 
+    marginBottom: 4 
+  },
+  studentEmail: { 
+    fontSize: 13, 
+    color: '#6b7280',
+    marginBottom: 4
+  },
+  viewProfileHint: { 
+    fontSize: 13, 
+    color: '#2563eb', 
+    fontWeight: '500'
+  },
+  statusBadge: { 
+    paddingHorizontal: 14, 
+    paddingVertical: 8, 
+    borderRadius: 18,
+    alignSelf: 'flex-start',
+    marginBottom: 12
+  },
+  statusPending: { 
+    backgroundColor: '#fef3c7' 
+  },
+  statusAccepted: { 
+    backgroundColor: '#d1fae5' 
+  },
+  statusRejected: { 
+    backgroundColor: '#fee2e2' 
+  },
+  statusText: { 
+    fontSize: 13, 
+    fontWeight: '600' 
+  },
+  detailRow: { 
+    marginBottom: 10 
+  },
+  detailLabel: { 
+    fontSize: 13, 
+    fontWeight: '600', 
+    color: '#6b7280', 
+    marginBottom: 4 
+  },
+  detailValue: { 
+    fontSize: 14, 
+    color: '#1f2937', 
+    lineHeight: 20 
+  },
   cvButton: {
     backgroundColor: '#dbeafe',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginVertical: 10
+    marginTop: 4,
+    marginBottom: 12
   },
-  cvButtonText: { fontSize: 14, fontWeight: '600', color: '#1e40af' },
-  appliedDate: { fontSize: 12, color: '#9ca3af', marginTop: 10, marginBottom: 15 },
-  actions: { flexDirection: 'row', gap: 10 },
+  cvButtonText: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    color: '#1e40af' 
+  },
+  appliedDate: { 
+    fontSize: 12, 
+    color: '#9ca3af', 
+    marginBottom: 12 
+  },
+  actions: { 
+    flexDirection: 'row', 
+    gap: 10,
+    marginTop: 4
+  },
   rejectButton: {
     flex: 1,
     backgroundColor: '#fee2e2',
-    padding: 15,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center'
   },
-  rejectButtonText: { fontSize: 15, fontWeight: 'bold', color: '#991b1b' },
+  rejectButtonText: { 
+    fontSize: 14, 
+    fontWeight: 'bold', 
+    color: '#991b1b' 
+  },
   acceptButton: {
     flex: 1,
     backgroundColor: '#10b981',
-    padding: 15,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center'
   },
-  acceptButtonText: { fontSize: 15, fontWeight: 'bold', color: '#fff' },
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  emptyIcon: { fontSize: 80, marginBottom: 20 },
-  emptyText: { fontSize: 18, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 },
-  emptySubtext: { fontSize: 14, color: '#6b7280', textAlign: 'center' }
+  acceptButtonText: { 
+    fontSize: 14, 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+  emptyState: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 40 
+  },
+  emptyIcon: { 
+    fontSize: 80, 
+    marginBottom: 20 
+  },
+  emptyText: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#1f2937', 
+    marginBottom: 10 
+  },
+  emptySubtext: { 
+    fontSize: 15, 
+    color: '#6b7280', 
+    textAlign: 'center',
+    lineHeight: 22
+  },
+  chatButton: {
+    backgroundColor: '#8b5cf6',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 4
+  },
+  chatButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff'
+  }
 });
 
 export default JobApplicationsScreen;

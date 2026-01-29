@@ -25,7 +25,16 @@ const EditJobScreen = ({ route, navigation }) => {
 
     setLoading(true);
     try {
-      await api.updateJob(job.id, { title, description, job_type: jobType, location, salary, requirements, status });
+      await api.updateJob(job.id, {
+        title,
+        description,
+        job_type: jobType,
+        location,
+        salary,
+        requirements,
+        status,
+        job_deadline: jobDeadline
+      });
       Alert.alert('Success!', 'Job updated successfully', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (error) {
       Alert.alert('Error', 'Failed to update job');
@@ -90,7 +99,7 @@ const EditJobScreen = ({ route, navigation }) => {
             <TextInput style={[styles.input, styles.textArea]} value={requirements} onChangeText={setRequirements} multiline numberOfLines={4} />
           </View>
 
-         
+
 
           <TouchableOpacity style={styles.updateButton} onPress={handleUpdate} disabled={loading}>
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.updateButtonText}>💾 Save Changes</Text>}

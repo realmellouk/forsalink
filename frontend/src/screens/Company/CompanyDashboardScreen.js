@@ -136,7 +136,7 @@ const CompanyDashboardScreen = ({ navigation }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.editButton}
-          onPress={() => navigation.navigate('EditJobScreen', { job: item })}
+          onPress={() => navigation.navigate('EditJob', { job: item })}
         >
           <Text style={styles.editButtonText}>✏️ Edit</Text>
         </TouchableOpacity>
@@ -172,26 +172,36 @@ const CompanyDashboardScreen = ({ navigation }) => {
           <Text style={styles.emptySubtext}>Create your first job posting!</Text>
           <TouchableOpacity
             style={styles.createFirstButton}
-            onPress={() => navigation.navigate('AddJobScreen')}
+            onPress={() => navigation.navigate('AddJob')}
           >
             <Text style={styles.createFirstButtonText}>+ Create Job</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
-          data={jobs}
-          renderItem={renderJobCard}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#2563eb']}
-            />
-          }
-        />
+        <>
+          <FlatList
+            data={jobs}
+            renderItem={renderJobCard}
+            keyExtractor={item => item.id.toString()}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#2563eb']}
+              />
+            }
+          />
+
+          {/* Floating Action Button */}
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => navigation.navigate('AddJob')}
+          >
+            <Text style={styles.fabIcon}>+</Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
@@ -227,7 +237,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 12,
-    paddingBottom: 20
+    paddingBottom: 85
   },
   jobCard: {
     backgroundColor: '#ffffff',
@@ -377,6 +387,28 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 15,
     fontWeight: 'bold'
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 85,
+    backgroundColor: '#2563eb',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8
+  },
+  fabIcon: {
+    color: '#ffffff',
+    fontSize: 32,
+    fontWeight: 'bold',
+    lineHeight: 32
   }
 });
 

@@ -21,6 +21,8 @@ import BookmarksScreen from '../screens/student/BookmarksScreen';
 import AppliedJobsScreen from '../screens/student/AppliedJobsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import StudentProfileView from '../screens/student/StudentProfileView';
+import ConversationsScreen from '../screens/ConversationsScreen';
+import ChatScreen from '../screens/ChatScreen';
 // Company screens
 import CompanyDashboardScreen from '../screens/Company/CompanyDashboardScreen';
 import AddJobScreen from '../screens/Company/AddJobScreen';
@@ -34,6 +36,7 @@ const Tab = createBottomTabNavigator();
 // Simple icon components (using Text instead of span)
 const HomeIcon = () => <Text style={{ fontSize: 24 }}>🏠</Text>;
 const BellIcon = () => <Text style={{ fontSize: 24 }}>🔔</Text>;
+const ChatIcon = () => <Text style={{ fontSize: 24 }}>💬</Text>;
 const UserIcon = () => <Text style={{ fontSize: 24 }}>👤</Text>;
 const SettingsIcon = () => <Text style={{ fontSize: 24 }}>⚙️</Text>;
 const BriefcaseIcon = () => <Text style={{ fontSize: 24 }}>💼</Text>;
@@ -48,11 +51,15 @@ const StudentTabs = () => {
         tabBarActiveTintColor: '#2563eb',
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: {
-          paddingBottom: 5,
+          paddingBottom: 8,
           paddingTop: 5,
-          height: 60,
+          height: 65,
           borderTopWidth: 1,
-          borderTopColor: '#e5e7eb'
+          borderTopColor: '#e5e7eb',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
         }
       }}
     >
@@ -101,11 +108,15 @@ const CompanyTabs = () => {
         tabBarActiveTintColor: '#2563eb',
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: {
-          paddingBottom: 5,
+          paddingBottom: 8,
           paddingTop: 5,
-          height: 60,
+          height: 65,
           borderTopWidth: 1,
-          borderTopColor: '#e5e7eb'
+          borderTopColor: '#e5e7eb',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
         }
       }}
     >
@@ -192,6 +203,16 @@ const AppNavigator = () => {
               options={{ headerShown: true, title: 'My Applications' }}
             />
             <Stack.Screen
+              name="Conversations"
+              component={ConversationsScreen}
+              options={{ headerShown: true, title: 'Messages' }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={{ headerShown: true }}
+            />
+            <Stack.Screen
               name="StudentProfileView"
               component={StudentProfileView}
               options={{ headerShown: true, title: 'Student Profile' }}
@@ -211,7 +232,17 @@ const AppNavigator = () => {
               component={JobApplicationsScreen}
               options={{ headerShown: true, title: 'Applications' }}
             />
-            
+            <Stack.Screen
+              name="Conversations"
+              component={ConversationsScreen}
+              options={{ headerShown: true, title: 'Messages' }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={{ headerShown: true }}
+            />
+
             <Stack.Screen
               name="StudentProfileView"
               component={StudentProfileView}

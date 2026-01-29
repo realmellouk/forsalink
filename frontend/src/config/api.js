@@ -388,6 +388,88 @@ export const api = {
     }
   },
 
+  // Conversations & Messages
+  getConversations: async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/conversations/${userId}`);
+      if (!response.ok) {
+        throw new APIError('Failed to load conversations.', 'server');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  getConversationMessages: async (conversationId) => {
+    try {
+      const response = await fetch(`${API_URL}/conversations/${conversationId}/messages`);
+      if (!response.ok) {
+        throw new APIError('Failed to load messages.', 'server');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  createConversation: async (studentId, companyId, jobId) => {
+    try {
+      const response = await fetch(`${API_URL}/conversations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: studentId, company_id: companyId, job_id: jobId })
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 403) {
+          throw new APIError(data.error || 'Cannot create conversation', 'permission');
+        }
+        throw new APIError('Failed to create conversation.', 'server');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  sendMessage: async (conversationId, senderId, message) => {
+    try {
+      const response = await fetch(`${API_URL}/conversations/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation_id: conversationId, sender_id: senderId, message })
+      });
+      if (!response.ok) {
+        throw new APIError('Failed to send message.', 'server');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
+  markMessagesAsRead: async (conversationId, userId) => {
+    try {
+      const response = await fetch(`${API_URL}/conversations/${conversationId}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (!response.ok) {
+        throw new APIError('Failed to mark messages as read.', 'server');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Cannot connect to server. Check your internet.', 'network');
+    }
+  },
+
   changePassword: async (userId, oldPassword, newPassword) => {
     try {
       const response = await fetch(`${API_URL}/auth/change-password`, {
@@ -409,19 +491,6 @@ export const api = {
       if (error instanceof APIError) throw error;
       throw new APIError('Cannot connect to server. Check your internet.', 'network');
     }
-  }
-};
-// Add these to the api object:
-
-// Get applications for a job
-getJobApplicationsScreen: async (jobId) => {
-  try {
-    const response = await fetch(`${API_URL}/jobs/${jobId}/applications`);
-    if (!response.ok) throw new APIError('Failed to load applications.', 'server');
-    return response.json();
-  } catch (error) {
-    if (error instanceof APIError) throw error;
-    throw new APIError('Cannot connect to server.', 'network');
   }
 };
 

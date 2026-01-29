@@ -28,27 +28,27 @@ const CompanyProfileScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
- const loadStats = async () => {
-  try {
-    const jobs = await api.getCompanyJobs(user.id);
-    const activeJobs = jobs.filter(job => job.status === 'active').length;
-    
-    // Get total applicants across all jobs
-    let totalApplicants = 0;
-    for (const job of jobs) {
-      const applications = await api.getJobApplicationsScreen(job.id);
-      totalApplicants += applications.length;
-    }
+  const loadStats = async () => {
+    try {
+      const jobs = await api.getCompanyJobs(user.id);
+      const activeJobs = jobs.filter(job => job.status === 'active').length;
 
-    setStats({
-      totalJobs: jobs.length,
-      activeJobs: activeJobs,
-      totalApplicants: totalApplicants
-    });
-  } catch (error) {
-    console.error('Failed to load stats:', error);
-  }
-};
+      // Get total applicants across all jobs
+      let totalApplicants = 0;
+      for (const job of jobs) {
+        const applications = await api.getJobApplicationsScreen(job.id);
+        totalApplicants += applications.length;
+      }
+
+      setStats({
+        totalJobs: jobs.length,
+        activeJobs: activeJobs,
+        totalApplicants: totalApplicants
+      });
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
 
   const pickImage = async () => {
     try {
@@ -201,7 +201,7 @@ const CompanyProfileScreen = ({ navigation }) => {
             <View style={styles.quickActions}>
               <TouchableOpacity
                 style={styles.quickActionButton}
-                onPress={() => navigation.navigate('CompanyDashboardScreen')}
+                onPress={() => navigation.navigate('Dashboard')}
               >
                 <Text style={styles.quickActionIcon}>📋</Text>
                 <Text style={styles.quickActionText}>My Jobs</Text>
@@ -209,10 +209,18 @@ const CompanyProfileScreen = ({ navigation }) => {
 
               <TouchableOpacity
                 style={styles.quickActionButton}
-                onPress={() => navigation.navigate('AddJobScreen')}
+                onPress={() => navigation.navigate('AddJob')}
               >
                 <Text style={styles.quickActionIcon}>➕</Text>
                 <Text style={styles.quickActionText}>Post Job</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.quickActionButton, { backgroundColor: '#8b5cf6' }]}
+                onPress={() => navigation.navigate('Conversations')}
+              >
+                <Text style={styles.quickActionIcon}>💬</Text>
+                <Text style={[styles.quickActionText, { color: '#ffffff' }]}>Messages</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -346,7 +354,7 @@ const styles = StyleSheet.create({
   email: { fontSize: 14, color: '#6b7280', marginBottom: 15 },
   badge: { backgroundColor: '#dbeafe', paddingHorizontal: 15, paddingVertical: 6, borderRadius: 20 },
   badgeText: { fontSize: 13, fontWeight: '600', color: '#1e40af' },
-  
+
   statsContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -380,7 +388,7 @@ const styles = StyleSheet.create({
   buttonContainer: { padding: 20 },
   editButton: { backgroundColor: '#2563eb', borderRadius: 10, padding: 15, alignItems: 'center', marginBottom: 15 },
   editButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  
+
   quickActions: {
     flexDirection: 'row',
     gap: 10
@@ -409,7 +417,7 @@ const styles = StyleSheet.create({
   cancelButtonText: { color: '#6b7280', fontSize: 16, fontWeight: 'bold' },
   saveButton: { flex: 1, backgroundColor: '#10b981', borderRadius: 10, padding: 15, alignItems: 'center', marginLeft: 10 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  
+
   form: { padding: 20, paddingTop: 0 },
   section: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 15 },
   sectionTitle: {
@@ -426,7 +434,7 @@ const styles = StyleSheet.create({
   value: { fontSize: 16, color: '#1f2937' },
   input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 12, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
-  
+
   imagePickerButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
